@@ -4,7 +4,8 @@
     "version": "1.0.0",
     "content_scripts": [
         {
-            "matches": ["https://osnplus.com/*"],
+            "matches": [
+                "https://osnplus.com/*","https://www.youtube.com/*"],
             "js": ["Content.js"]
         }
     ]
