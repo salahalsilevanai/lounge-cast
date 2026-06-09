@@ -48,4 +48,16 @@ document.addEventListener("keydown", function(event) {
     }
 });
 
+
+// if key is press "r" then reset the video
+document.addEventListener("keydown", function(event) {
+    if (event.key === "r") {
+        document.querySelector("video").currentTime = 0;
+    }
+});
 setInterval(get_current_time, 1000)
+
+// get current url and id of the video
+
+// const result = document.URL.split("/watch")
+// const video_id = result[0].split("-")[result[0].split("-").length - 1]
