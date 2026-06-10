@@ -66,6 +66,45 @@ const body = document.querySelector("body")
 body.style.width = "calc(100vw - 320px)"
 // add an iframe to the right of the video
 const div = document.createElement("div")
+// when this div is in focus or clicked it stop every other event listener on the page and only listen to the events on this div
+div.addEventListener("click", function(event) {
+    event.stopPropagation();
+
+});
+// stop api calls when the div is in focus
+div.addEventListener("focus", function(event) {
+    event.stopPropagation();
+});
+// stop keydown events when the div is in focus
+div.addEventListener("keydown", function(event) {
+    event.stopPropagation();
+});
+// stop keyup events when the div is in focus
+div.addEventListener("keyup", function(event) {
+    event.stopPropagation();
+});
+// stop keypress events when the div is in focus
+div.addEventListener("keypress", function(event) {
+    event.stopPropagation();
+});
+// stop mouse events when the div is in focus
+div.addEventListener("mousedown", function(event) {
+    event.stopPropagation();
+});
+
+// stop mouse events when the div is in focus
+div.addEventListener("mouseup", function(event) {
+    event.stopPropagation();
+});
+
+// stop mouse events when the div is in focus
+div.addEventListener("mousemove", function(event) {
+    event.stopPropagation();
+});
+
+
+
+
 div.style.height = "100vh"
 div.style.width = "320px"
 div.style.position = "fixed"
@@ -129,9 +168,6 @@ controls.style.alignItems = "center"
 controls.style.justifyContent = "space-around"
 div.appendChild(controls) // controls is the div where the play and pause buttons will be displayed
 
-// when in input is writing in disable the keydown event for the video
-// when the input is focused, disable the keydown event for the video
-// when the input is writing in disable even the api calls for the video
 
 
 
