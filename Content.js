@@ -131,18 +131,7 @@ h1.style.textAlign = "center"
 chat.appendChild(h1) // h1 is the heading of the chat
 
 for (let i = 0; i < 10; i++) {
-    const message = document.createElement("div")
-    message.style.padding = "10px"
-    message.style.marginBottom = "10px"
-    message.style.fontSize = "15px"
-    message.style.backgroundColor = "#f1f1f1"
-    message.style.borderRadius = "20px"
-    message.style.width = "fit-content"        
-    //message.style.maxWidth = "80%"
-    message.style.wordWrap = "break-word"
-    message.style.alignContent = "flex-start"
-    message.innerText = "hello how are you my friend?"
-    chat.appendChild(message) // message is the div where the message will be displayed
+    display_message("This is a sample message " + (i + 1), "other") // display_message is the function that will display the message in the chat
 }
 
 
@@ -175,24 +164,38 @@ div.appendChild(controls) // controls is the div where the play and pause button
 // key down enter to send the message
 input.addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
-        const message = document.createElement("div")
+        display_message(input.value, "user") // display_message is the function that will display the message in the chat
+        input.value = "" // clear the input field after sending the message
+    // if message is empty do not send the message
+    if (input.value.trim() === "") {
+        return;
+    }
 
+    }
+});
+
+function display_message(message_text, sender = "user") {
+    const message = document.createElement("div")
     message.style.padding = "10px"
     message.style.marginBottom = "10px"
     message.style.fontSize = "15px"
-    message.style.backgroundColor = "#f1f1f1"
     message.style.borderRadius = "20px"
-    message.style.width = "fit-content"   
-    // move message to the right of the chat ------- depends on sender and receiver
-    message.style.marginLeft = "auto"
+    message.style.width = "fit-content"
+    // move message to the left of the chat ------- depends on sender and receiver
+    if (sender === "user") {
+        message.style.marginLeft = "auto"
+        message.style.backgroundColor = "#DCF8C6"
+    }
+    else {
+        message.style.marginRight = "auto"
+        message.style.backgroundColor = "#f1f1f1"
+    }
     message.style.maxWidth = "80%"
     message.style.wordWrap = "break-word"
     message.style.alignContent = "flex-start"
-    message.innerText = input.value
+    message.innerText = message_text
     chat.appendChild(message) // message is the div where the message will be displayed
-    input.value = "" // clear the input field
     // scroll to the bottom of the chat
     chat.scrollTop = chat.scrollHeight
-    }
-});
+}
 
