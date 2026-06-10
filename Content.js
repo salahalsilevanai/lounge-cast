@@ -61,3 +61,69 @@ setInterval(get_current_time, 1000)
 
 // const result = document.URL.split("/watch")
 // const video_id = result[0].split("-")[result[0].split("-").length - 1]
+
+const body = document.querySelector("body")
+body.style.width = "calc(100vw - 320px)"
+// add an iframe to the right of the video
+const div = document.createElement("div")
+div.style.height = "100vh"
+div.style.width = "320px"
+div.style.position = "fixed"
+div.style.top = "0"
+div.style.right = "0"
+
+body.appendChild(div)
+
+const chat = document.createElement("div")
+chat.style.height = "calc(100vh - 100px)"
+chat.style.width = "100%"
+chat.style.overflowY = "scroll"
+chat.style.padding = "10px"
+div.appendChild(chat) // chat is the div where the messages will be displayed
+
+h1 = document.createElement("h1")
+h1.innerText = "Chat"
+h1.style.textAlign = "center"
+
+chat.appendChild(h1) // h1 is the heading of the chat
+
+for (let i = 0; i < 10; i++) {
+    const message = document.createElement("div")
+    message.style.padding = "7px"
+    message.style.marginBottom = "10px"
+    message.style.fontSize = "15px"
+    message.style.backgroundColor = "#f1f1f1"
+    message.style.borderRadius = "10px"
+    message.style.width = "fit-content"        
+    message.style.maxWidth = "80%"
+    message.style.wordWrap = "break-word"
+    message.style.alignContent = "flex-start"
+    message.innerText = "how are you my friend, who are ajdf;adf"
+    chat.appendChild(message) // message is the div where the message will be displayed
+}
+
+
+input = document.createElement("input")
+input.style.width = "calc(100% - 20px)"
+input.style.height = "50px"
+input.style.fontSize = "15px"
+input.style.padding = "10px"
+input.style.boxSizing = "border-box"
+input.style.margin = "0 10px "
+input.style.borderRadius = "10px"
+input.placeholder = "Type your message here..."
+
+div.appendChild(input) // input is the input field where the user will type their message
+
+
+const controls = document.createElement("div")
+controls.style.height = "50px"
+controls.style.width = "100%"
+controls.style.display = "flex"
+controls.style.justifyContent = "center"
+controls.style.alignItems = "center"
+controls.style.justifyContent = "space-around"
+div.appendChild(controls) // controls is the div where the play and pause buttons will be displayed
+
+
+
