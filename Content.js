@@ -103,8 +103,9 @@ div.addEventListener("mousemove", function(event) {
 });
 
 
-
-
+// z-index of the div should be higher than the video
+div.style.zIndex = "1000"
+div.style.backgroundColor = "rgba(0, 0, 0, 0.5)"
 div.style.height = "100vh"
 div.style.width = "320px"
 div.style.position = "fixed"
@@ -181,8 +182,10 @@ input.addEventListener("keydown", function(event) {
     message.style.fontSize = "15px"
     message.style.backgroundColor = "#f1f1f1"
     message.style.borderRadius = "20px"
-    message.style.width = "fit-content"        
-    //message.style.maxWidth = "80%"
+    message.style.width = "fit-content"   
+    // move message to the right of the chat ------- depends on sender and receiver
+    message.style.marginLeft = "auto"
+    message.style.maxWidth = "80%"
     message.style.wordWrap = "break-word"
     message.style.alignContent = "flex-start"
     message.innerText = input.value
