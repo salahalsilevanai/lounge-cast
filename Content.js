@@ -83,24 +83,28 @@ div.appendChild(chat) // chat is the div where the messages will be displayed
 
 h1 = document.createElement("h1")
 h1.innerText = "Chat"
+// color
+h1.style.color = "#FAFAFA"
+h1.style.ZIndex = "1000"
 h1.style.textAlign = "center"
 
 chat.appendChild(h1) // h1 is the heading of the chat
 
 for (let i = 0; i < 10; i++) {
     const message = document.createElement("div")
-    message.style.padding = "7px"
+    message.style.padding = "10px"
     message.style.marginBottom = "10px"
     message.style.fontSize = "15px"
     message.style.backgroundColor = "#f1f1f1"
-    message.style.borderRadius = "10px"
+    message.style.borderRadius = "20px"
     message.style.width = "fit-content"        
-    message.style.maxWidth = "80%"
+    //message.style.maxWidth = "80%"
     message.style.wordWrap = "break-word"
     message.style.alignContent = "flex-start"
-    message.innerText = "how are you my friend, who are ajdf;adf"
+    message.innerText = "hello how are you my friend?"
     chat.appendChild(message) // message is the div where the message will be displayed
 }
+
 
 
 input = document.createElement("input")
@@ -110,7 +114,7 @@ input.style.fontSize = "15px"
 input.style.padding = "10px"
 input.style.boxSizing = "border-box"
 input.style.margin = "0 10px "
-input.style.borderRadius = "10px"
+input.style.borderRadius = "20px"
 input.placeholder = "Type your message here..."
 
 div.appendChild(input) // input is the input field where the user will type their message
@@ -125,5 +129,31 @@ controls.style.alignItems = "center"
 controls.style.justifyContent = "space-around"
 div.appendChild(controls) // controls is the div where the play and pause buttons will be displayed
 
+// when in input is writing in disable the keydown event for the video
+// when the input is focused, disable the keydown event for the video
+// when the input is writing in disable even the api calls for the video
 
+
+
+// key down enter to send the message
+input.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        const message = document.createElement("div")
+
+    message.style.padding = "10px"
+    message.style.marginBottom = "10px"
+    message.style.fontSize = "15px"
+    message.style.backgroundColor = "#f1f1f1"
+    message.style.borderRadius = "20px"
+    message.style.width = "fit-content"        
+    //message.style.maxWidth = "80%"
+    message.style.wordWrap = "break-word"
+    message.style.alignContent = "flex-start"
+    message.innerText = input.value
+    chat.appendChild(message) // message is the div where the message will be displayed
+    input.value = "" // clear the input field
+    // scroll to the bottom of the chat
+    chat.scrollTop = chat.scrollHeight
+    }
+});
 
