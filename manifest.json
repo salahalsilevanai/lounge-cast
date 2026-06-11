@@ -8,5 +8,8 @@
                 "https://osnplus.com/*","https://www.youtube.com/*"],
             "js": ["Content.js"]
         }
-    ]
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    }
 }
