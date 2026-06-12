@@ -264,8 +264,8 @@ chrome.runtime.onMessage.addListener((packet) => {
 
 chrome.runtime.onMessage.addListener((packet) => {
   if (packet.type === "NAME") {
-    display_message(packet.text, "user", true);
-    send_message(packet.text);
+    display_message(packet.text + " joined the room", "user", true);
+    send_message(packet.text + " joined the room");
   }
 });
 
