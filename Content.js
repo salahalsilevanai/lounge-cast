@@ -60,6 +60,7 @@ input.style.width = "calc(100% - 20px)";
 input.style.height = "40px";
 input.style.fontSize = "14px";
 input.style.padding = "10px";
+input.style.marginBottom = "10px";
 input.style.boxSizing = "border-box";
 input.style.margin = "0 10px";
 input.style.borderRadius = "20px";
@@ -141,6 +142,13 @@ function setupVideoSyncListeners() {
       type: "VIDEO_PLAY",
       time: videoElement.currentTime,
     });
+    display_message(
+      "Playing at " +
+        Math.round(videoElement.currentTime / 60) +
+        ":" +
+        Math.round(videoElement.currentTime % 60),
+      "user",
+    );
   });
 
   videoElement.addEventListener("pause", () => {
@@ -149,6 +157,13 @@ function setupVideoSyncListeners() {
       type: "VIDEO_PAUSE",
       time: videoElement.currentTime,
     });
+    display_message(
+      "Paused at " +
+        Math.round(videoElement.currentTime / 60) +
+        ":" +
+        Math.round(videoElement.currentTime % 60),
+      "user",
+    );
   });
 
   videoElement.addEventListener("seeking", () => {
@@ -157,6 +172,13 @@ function setupVideoSyncListeners() {
       type: "VIDEO_SEEK",
       time: videoElement.currentTime,
     });
+    display_message(
+      "Seeking to " +
+        Math.round(videoElement.currentTime / 60) +
+        ":" +
+        Math.round(videoElement.currentTime % 60),
+      "user",
+    );
   });
 }
 
@@ -183,19 +205,40 @@ chrome.runtime.onMessage.addListener((packet) => {
 
     case "VIDEO_PLAY":
       // If client is more than 1.5s out of sync, snap them to the exact peer time
-      if (Math.abs(videoElement.currentTime - packet.time) > 1.5) {
-        videoElement.currentTime = packet.time;
-      }
+      //if (Math.abs(videoElement.currentTime - packet.time) > 1.5) {
+      videoElement.currentTime = packet.time;
+      display_message(
+        "Played at " +
+          Math.round(packet.time / 60) +
+          ":" +
+          Math.round(packet.time % 60),
+        "other",
+      );
+      //}
       videoElement.play().catch(() => {});
       break;
 
     case "VIDEO_PAUSE":
       videoElement.currentTime = packet.time;
       videoElement.pause();
+      display_message(
+        "Paused at " +
+          Math.round(packet.time / 60) +
+          ":" +
+          Math.round(packet.time % 60),
+        "other",
+      );
       break;
 
     case "VIDEO_SEEK":
       videoElement.currentTime = packet.time;
+      display_message(
+        "Seeked to " +
+          Math.round(packet.time / 60) +
+          ":" +
+          Math.round(packet.time % 60),
+        "other",
+      );
       break;
 
     case "CHAT_MSG":

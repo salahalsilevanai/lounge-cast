@@ -1,18 +1,15 @@
 import { io } from "./socket.io.esm.min.js";
 
 // Force the client to ONLY use WebSockets, bypassing the faulty XHR polling phase
-// const socket = io("http://127.0.0.1:3000", {
-//   autoConnect: false,
-//   transports: ["websocket"], // <-- ADD THIS LINE
-// });
+const socket = io("http://127.0.0.1:3000", {
+  autoConnect: false,
+  transports: ["websocket"], // <-- ADD THIS LINE
+});
 
-const socket = io(
-  "https://operated-manager-estate-microphone.trycloudflare.com",
-  {
-    autoConnect: false,
-    transports: ["websocket"],
-  },
-);
+// const socket = io("https://embedded-money-nowhere-organ.trycloudflare.com", {
+//   autoConnect: false,
+//   transports: ["websocket"],
+// });
 // The rest of your event listeners stay exactly the same:
 socket.on("connect", function () {
   console.log("Connected to Socket.IO server!");
