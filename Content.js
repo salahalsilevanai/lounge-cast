@@ -20,9 +20,16 @@ body.style.width = "calc(100vw - 320px)";
 
 const div = document.createElement("div");
 // Fixed: Swapped focus to tracking event capturing to ensure inputs take keystrokes cleanly
-div.addEventListener("keydown", (e) => e.stopPropagation(), true);
-div.addEventListener("keyup", (e) => e.stopPropagation(), true);
-div.addEventListener("keypress", (e) => e.stopPropagation(), true);
+
+div.addEventListener(
+  "keydown" || "keyup" || "keypress",
+  (e) => {
+    if (e.key !== "Enter") {
+      e.stopPropagation();
+    }
+  },
+  true,
+);
 
 div.style.zIndex = "1000";
 div.style.backgroundColor = "rgba(30, 30, 30, 0.95)"; // Made it darker so chat text pops nicely
@@ -55,7 +62,6 @@ chat.appendChild(h1);
 
 const input = document.createElement("input");
 input.type = "text";
-input.name = "name";
 input.style.width = "calc(100% - 20px)";
 input.style.height = "40px";
 input.style.fontSize = "14px";
@@ -87,13 +93,17 @@ send.addEventListener("click", () => {
   const message = input.value;
   if (message) {
     display_message(message, "user");
-    chrome.runtime.sendMessage({
-      type: "CHAT_MSG",
-      text: message,
-    });
+    send_message(message);
     input.value = "";
   }
 });
+input.addEventListener(
+  "keydown" || "keypress" || "keyup",
+  (e) => {
+    if (e.key === "Enter") send.click();
+  },
+  true,
+);
 
 function display_message(message_text, sender = "user") {
   const message = document.createElement("div");
@@ -251,3 +261,17 @@ chrome.runtime.onMessage.addListener((packet) => {
     isSyncing = false;
   }, 100);
 });
+
+chrome.runtime.onMessage.addListener((packet) => {
+  if (packet.type === "NAME") {
+    display_message(packet.text, "user", true);
+    send_message(packet.text);
+  }
+});
+
+function send_message(message) {
+  chrome.runtime.sendMessage({
+    type: "CHAT_MSG",
+    text: message,
+  });
+}

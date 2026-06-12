@@ -7,7 +7,7 @@ import { io } from "./socket.io.esm.min.js";
 // });
 
 const socket = io("https://osntogetherextention.alsilevanai.com/", {
-  autoConnect: false,
+  autoConnect: true,
   transports: ["websocket"],
 });
 // The rest of your event listeners stay exactly the same:
