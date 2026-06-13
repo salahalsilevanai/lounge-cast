@@ -7,7 +7,7 @@
     <style>
       body {
         width: 250px;
-        height: 250px;
+        height: auto;
         background-color: #e7ecef;
         border: 0px;
       }
@@ -22,9 +22,10 @@
         border: 1px solid #ccc;
         width: 200px;
       }
-      #button {
+      #button,
+      #refresh {
         display: block;
-        margin: 10px auto;
+        margin: 5px auto;
         width: 220px;
         height: 35px;
         border-radius: 5px;
@@ -32,6 +33,9 @@
         background-color: #4caf50;
         color: white;
         cursor: pointer;
+      }
+      #refresh {
+        margin-bottom: 10px;
       }
       button:hover {
         background-color: #45a049;
@@ -53,10 +57,11 @@
     <div class="container" style="margin-top: 10px">
       <h1>osnTogether</h1>
     </div>
-    <div class="container" style="margin-top: auto">
+    <div class="container" style="margin-top: auto; margin-bottom: 10px">
       <input type="text" placeholder="Name" id="name" />
       <input type="text" placeholder="Room ID" id="room" />
       <button id="button">join</button>
+      <button id="refresh">refresh</button>
       <script src="popup.js"></script>
     </div>
   </body>

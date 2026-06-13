@@ -41,7 +41,7 @@ div.style.right = "0";
 body.appendChild(div);
 
 const chat = document.createElement("div");
-chat.style.height = "calc(100vh - 120px)";
+chat.style.height = "calc(100vh - 100px)";
 chat.style.width = "100%";
 chat.style.overflowY = "scroll";
 chat.style.padding = "10px";
@@ -66,12 +66,13 @@ input.style.width = "calc(100% - 20px)";
 input.style.height = "40px";
 input.style.fontSize = "14px";
 input.style.padding = "10px";
-input.style.marginBottom = "10px";
 input.style.boxSizing = "border-box";
 input.style.margin = "0 10px";
-input.style.borderRadius = "20px";
+input.style.borderRadius = "15px";
 input.style.border = "none";
 input.placeholder = "Type your message here...";
+input.style.marginBottom = "10px";
+input.style.outline = "none";
 div.appendChild(input);
 
 const send = document.createElement("button");
@@ -82,7 +83,7 @@ send.style.fontSize = "14px";
 send.style.padding = "10px";
 send.style.boxSizing = "border-box";
 send.style.margin = "0 10px";
-send.style.borderRadius = "20px";
+send.style.borderRadius = "15px";
 send.style.border = "none";
 send.style.backgroundColor = "#075E54";
 send.style.color = "#FAFAFA";
@@ -107,25 +108,47 @@ input.addEventListener(
 
 function display_message(message_text, sender = "user") {
   const message = document.createElement("div");
+
+  const user = document.createElement("p");
+  const text = document.createElement("p");
+  text.innerText = message_text;
+  if (sender === "user") {
+    user.style.fontSize = "12px";
+    user.style.fontWeight = "bold";
+    user.style.alignSelf = "flex-end";
+    user.innerHTML = "<p>you</p>";
+    message.appendChild(user);
+    message.appendChild(text);
+  } else {
+    user.style.fontSize = "12px";
+    user.style.color = "black";
+    user.style.fontWeight = "bold";
+    user.style.alignSelf = "flex-start";
+    user.innerHTML = "<p>Guest</p>";
+    message.appendChild(user);
+    message.appendChild(text);
+  }
+
   message.style.padding = "10px 14px";
   message.style.fontSize = "14px";
   message.style.borderRadius = "15px";
   message.style.width = "fit-content";
   message.style.maxWidth = "80%";
-  message.style.wordWrap = "break-word";
-  message.innerText = message_text;
+  message.style.display = "flex";
+  message.style.flexDirection = "column";
+  message.style.gap = "0px";
 
-  // Use Flexbox alignment instead of floats
   if (sender === "user") {
-    message.style.alignSelf = "flex-end"; // Push to the right
+    message.style.alignSelf = "flex-end";
     message.style.backgroundColor = "#075E54";
-    message.style.color = "#FFFFFF";
+    message.style.color = "#FAFAFA";
   } else {
-    message.style.alignSelf = "flex-start"; // Push to the left
-    message.style.backgroundColor = "#E5E5EA";
+    message.style.alignSelf = "flex-start";
+    message.style.backgroundColor = "#FAFAFA";
     message.style.color = "#000000";
   }
-  console.log("hello");
+
+  text.style.wordWrap = "break-word";
 
   chat.appendChild(message);
 
@@ -266,6 +289,12 @@ chrome.runtime.onMessage.addListener((packet) => {
   if (packet.type === "NAME") {
     display_message(packet.text + " joined the room", "user", true);
     send_message(packet.text + " joined the room");
+  }
+});
+
+chrome.runtime.onMessage.addListener((packet) => {
+  if (packet.type === "REFRESH") {
+    location.reload();
   }
 });
 
