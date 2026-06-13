@@ -117,19 +117,32 @@ function display_message(message_text, sender = "user") {
     user.style.fontWeight = "bold";
     user.style.alignSelf = "flex-end";
     user.innerHTML = "<p>you</p>";
-    message.appendChild(user);
-    message.appendChild(text);
+    // if last element in chat is user message, don't append username
+    if (chat.children[chat.children.length - 1].id === "user") {
+      message.appendChild(text);
+      message.id = "user";
+    } else if (chat.children[chat.children.length - 1].id != "user") {
+      message.appendChild(user);
+      message.appendChild(text);
+      message.id = "user";
+    }
   } else {
     user.style.fontSize = "12px";
     user.style.color = "black";
     user.style.fontWeight = "bold";
     user.style.alignSelf = "flex-start";
     user.innerHTML = "<p>Guest</p>";
-    message.appendChild(user);
-    message.appendChild(text);
+    if (chat.children[chat.children.length - 1].id === "guest") {
+      message.appendChild(text);
+      message.id = "guest";
+    } else if (chat.children[chat.children.length - 1].id != "guest") {
+      message.appendChild(user);
+      message.appendChild(text);
+      message.id = "guest";
+    }
   }
 
-  message.style.padding = "10px 14px";
+  message.style.padding = "4px 10px 8px 10px";
   message.style.fontSize = "14px";
   message.style.borderRadius = "15px";
   message.style.width = "fit-content";
