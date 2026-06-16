@@ -106,25 +106,28 @@ input.addEventListener(
   true,
 );
 
-function display_message(message_text, sender = "user") {
+let username = "user";
+let guest = "guest";
+
+function display_message(message_text, sender = username) {
   const message = document.createElement("div");
 
   const user = document.createElement("p");
   const text = document.createElement("p");
   text.innerText = message_text;
-  if (sender === "user") {
+  if (sender === username) {
     user.style.fontSize = "12px";
     user.style.fontWeight = "bold";
     user.style.alignSelf = "flex-end";
     user.innerHTML = "<p>you</p>";
     // if last element in chat is user message, don't append username
-    if (chat.children[chat.children.length - 1].id === "user") {
+    if (chat.children[chat.children.length - 1].id === username) {
       message.appendChild(text);
-      message.id = "user";
-    } else if (chat.children[chat.children.length - 1].id != "user") {
+      message.id = username;
+    } else if (chat.children[chat.children.length - 1].id != username) {
       message.appendChild(user);
       message.appendChild(text);
-      message.id = "user";
+      message.id = username;
     }
   } else {
     user.style.fontSize = "12px";
@@ -132,13 +135,13 @@ function display_message(message_text, sender = "user") {
     user.style.fontWeight = "bold";
     user.style.alignSelf = "flex-start";
     user.innerHTML = "<p>Guest</p>";
-    if (chat.children[chat.children.length - 1].id === "guest") {
+    if (chat.children[chat.children.length - 1].id === guest) {
       message.appendChild(text);
-      message.id = "guest";
-    } else if (chat.children[chat.children.length - 1].id != "guest") {
+      message.id = guest;
+    } else if (chat.children[chat.children.length - 1].id != guest) {
       message.appendChild(user);
       message.appendChild(text);
-      message.id = "guest";
+      message.id = guest;
     }
   }
 
@@ -305,31 +308,29 @@ function send_message(message) {
   });
 }
 
-chrome.runtime.onMessage.addListener((packet) => {
-  if (packet.type === "CREATE ROOM") {
-    display_message("Room ID: " + packet.room, "user", true);
-    send_message("Room ID: " + packet.room);
-    chrome.runtime.sendMessage({
-      type: "JOIN",
-      room: packet.room,
-    });
-  }
-});
+// chrome.runtime.onMessage.addListener((packet) => {
+//   if (packet.type === "CREATE-ROOM") {
+//     display_message("Room ID: " + packet.room, "user", true);
+//     chrome.runtime.sendMessage({
+//       type: "CREATE-JOIN",
+//       name: packet.name,
+//       room: packet.room,
+//     });
+//   }
+// });
 
 chrome.runtime.onMessage.addListener((packet) => {
   if (packet.type === "JOIN") {
-    display_message(packet.room, "user");
-    send_message(" joined " + packet.room);
-
+    display_message(packet.name + " joined room: " + packet.room, "user");
     chrome.runtime.sendMessage({
       type: "JOIN",
+      name: packet.name,
       room: packet.room,
     });
   }
 
   if (packet.type === "LEAVE") {
     display_message("You left " + packet.room, "user");
-    send_message("You left " + packet.room);
     chrome.runtime.sendMessage({
       type: "LEAVE",
     });

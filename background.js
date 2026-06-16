@@ -67,12 +67,3 @@ socket.on("watch_party_event", (packet) => {
     chrome.tabs.sendMessage(activePartyTabId, packet);
   }
 });
-
-// chrome.runtime.onMessage.addListener((packet) => {
-//   if (packet.type === "JOIN") {
-//     socket.emit("join-room", packet.room);
-//     socket.emit("watch_party_event", { type: "JOIN", room: packet.room });
-//   } else if (packet.type === "LEAVE") {
-//     socket.emit("leave-room", packet.room);
-//   }
-// });

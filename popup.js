@@ -1,12 +1,26 @@
 // this function creates a random room id and sends it to the content script
-document.querySelector("#create").addEventListener("click", async () => {
-  const room = generate_room_id();
-  const room_id = document.querySelector("#room");
-  room_id.value = room;
+const room_field = document.querySelector("#room");
 
+document.querySelector("#create").addEventListener("click", async () => {
+  if (room_field.value.trim() === "") {
+    room = generate_room_id();
+  } else {
+    room = document.querySelector("#room").value;
+  }
+  room_field.value = room;
+
+  // send the room id to the content script
+  name = document.querySelector("#name").value;
+  if (name.trim() === "") {
+    name = "Anonymous";
+  }
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab && tab.id) {
-    chrome.tabs.sendMessage(tab.id, { type: "CREATE ROOM", room: room });
+    chrome.tabs.sendMessage(tab.id, {
+      type: "JOIN",
+      room: room,
+      name: name,
+    });
   }
 });
 
@@ -29,10 +43,15 @@ join.addEventListener("click", async () => {
   if (room.trim() === "") {
     return;
   }
+  const name = document.querySelector("#name").value;
+  if (room.trim() === "") {
+    name = "Anonymous";
+  }
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab && tab.id) {
     chrome.tabs.sendMessage(tab.id, {
       type: "JOIN",
+      name: name.trim(),
       room: room.trim(),
     });
   }
