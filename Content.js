@@ -298,22 +298,40 @@ chrome.runtime.onMessage.addListener((packet) => {
   }, 100);
 });
 
-chrome.runtime.onMessage.addListener((packet) => {
-  if (packet.type === "NAME") {
-    display_message(packet.text + " joined the room", "user", true);
-    send_message(packet.text + " joined the room");
-  }
-});
-
-chrome.runtime.onMessage.addListener((packet) => {
-  if (packet.type === "REFRESH") {
-    location.reload();
-  }
-});
-
 function send_message(message) {
   chrome.runtime.sendMessage({
     type: "CHAT_MSG",
     text: message,
   });
 }
+
+chrome.runtime.onMessage.addListener((packet) => {
+  if (packet.type === "CREATE ROOM") {
+    display_message("Room ID: " + packet.room, "user", true);
+    send_message("Room ID: " + packet.room);
+    chrome.runtime.sendMessage({
+      type: "JOIN",
+      room: packet.room,
+    });
+  }
+});
+
+chrome.runtime.onMessage.addListener((packet) => {
+  if (packet.type === "JOIN") {
+    display_message(packet.room, "user");
+    send_message(" joined " + packet.room);
+
+    chrome.runtime.sendMessage({
+      type: "JOIN",
+      room: packet.room,
+    });
+  }
+
+  if (packet.type === "LEAVE") {
+    display_message("You left " + packet.room, "user");
+    send_message("You left " + packet.room);
+    chrome.runtime.sendMessage({
+      type: "LEAVE",
+    });
+  }
+});

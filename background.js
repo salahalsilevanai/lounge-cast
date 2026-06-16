@@ -10,6 +10,7 @@ const socket = io("https://osntogetherextention.alsilevanai.com/", {
   autoConnect: true,
   transports: ["websocket"],
 });
+
 // The rest of your event listeners stay exactly the same:
 socket.on("connect", function () {
   console.log("Connected to Socket.IO server!");
@@ -66,3 +67,12 @@ socket.on("watch_party_event", (packet) => {
     chrome.tabs.sendMessage(activePartyTabId, packet);
   }
 });
+
+// chrome.runtime.onMessage.addListener((packet) => {
+//   if (packet.type === "JOIN") {
+//     socket.emit("join-room", packet.room);
+//     socket.emit("watch_party_event", { type: "JOIN", room: packet.room });
+//   } else if (packet.type === "LEAVE") {
+//     socket.emit("leave-room", packet.room);
+//   }
+// });
