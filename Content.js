@@ -3,6 +3,7 @@ let isIncomingSyncAction = false; // Prevents infinite reflection loops
 
 let isSyncing = false;
 
+// ---- find the video element ----
 function check_video() {
   videoElement = document.querySelector("video");
   if (!videoElement) {
@@ -14,23 +15,12 @@ function check_video() {
 }
 check_video();
 
-// --- 3. CHAT & DOM UI SETUP ---
+// ---- move over the body element ----
 const body = document.querySelector("body");
 body.style.width = "calc(100vw - 320px)";
 
+// ---- create the main container ----
 const div = document.createElement("div");
-// Fixed: Swapped focus to tracking event capturing to ensure inputs take keystrokes cleanly
-
-div.addEventListener(
-  "keydown" || "keyup" || "keypress",
-  (e) => {
-    if (e.key !== "Enter") {
-      e.stopPropagation();
-    }
-  },
-  true,
-);
-
 div.style.zIndex = "1000";
 div.style.backgroundColor = "rgba(30, 30, 30, 0.95)"; // Made it darker so chat text pops nicely
 div.style.height = "100vh";
@@ -40,19 +30,20 @@ div.style.top = "0";
 div.style.right = "0";
 body.appendChild(div);
 
+// ---- create the chat container ----
 const chat = document.createElement("div");
 chat.style.height = "calc(100vh - 100px)";
 chat.style.width = "100%";
 chat.style.overflowY = "scroll";
 chat.style.padding = "10px";
 chat.style.boxSizing = "border-box";
-
 // Add these lines to make it a flex container:
 chat.style.display = "flex";
 chat.style.flexDirection = "column";
 chat.style.gap = "10px"; // Adds space between messages automatically
 div.appendChild(chat);
 
+// ---- create the header ----
 const h1 = document.createElement("h1");
 h1.innerText = "Watch Party Chat";
 h1.style.color = "#FAFAFA";
@@ -60,6 +51,7 @@ h1.style.textAlign = "center";
 h1.style.fontSize = "20px";
 chat.appendChild(h1);
 
+// ---- create the input field ----
 const input = document.createElement("input");
 input.type = "text";
 input.style.width = "calc(100% - 20px)";
@@ -75,6 +67,7 @@ input.style.marginBottom = "10px";
 input.style.outline = "none";
 div.appendChild(input);
 
+// ---- create the send button ----
 const send = document.createElement("button");
 send.innerText = "Send";
 send.style.width = "calc(100% - 20px)";
@@ -90,14 +83,31 @@ send.style.color = "#FAFAFA";
 send.style.cursor = "pointer";
 div.appendChild(send);
 
+// ---- make the Enter key funtional in the input field ----
+div.addEventListener(
+  "keydown" || "keyup" || "keypress",
+  (e) => {
+    if (e.key !== "Enter") {
+      e.stopPropagation();
+    }
+  },
+  true,
+);
+
+let username = "Anonymous";
+let guest = "Anonymous1";
+
+// ---- send the message when the send button is clicked ----
 send.addEventListener("click", () => {
   const message = input.value;
   if (message) {
-    display_message(message, "user");
+    display_message(message, username);
     send_message(message);
     input.value = "";
   }
 });
+
+// ---- send the message when the Enter key is pressed ----
 input.addEventListener(
   "keydown" || "keypress" || "keyup",
   (e) => {
@@ -106,44 +116,11 @@ input.addEventListener(
   true,
 );
 
-let username = "user";
-let guest = "guest";
-
-function display_message(message_text, sender = username) {
+// ---- display the message (dynamic) ----
+function display_message(message_text, sender) {
   const message = document.createElement("div");
-
   const user = document.createElement("p");
   const text = document.createElement("p");
-  text.innerText = message_text;
-  if (sender === username) {
-    user.style.fontSize = "12px";
-    user.style.fontWeight = "bold";
-    user.style.alignSelf = "flex-end";
-    user.innerHTML = "<p>you</p>";
-    // if last element in chat is user message, don't append username
-    if (chat.children[chat.children.length - 1].id === username) {
-      message.appendChild(text);
-      message.id = username;
-    } else if (chat.children[chat.children.length - 1].id != username) {
-      message.appendChild(user);
-      message.appendChild(text);
-      message.id = username;
-    }
-  } else {
-    user.style.fontSize = "12px";
-    user.style.color = "black";
-    user.style.fontWeight = "bold";
-    user.style.alignSelf = "flex-start";
-    user.innerHTML = "<p>Guest</p>";
-    if (chat.children[chat.children.length - 1].id === guest) {
-      message.appendChild(text);
-      message.id = guest;
-    } else if (chat.children[chat.children.length - 1].id != guest) {
-      message.appendChild(user);
-      message.appendChild(text);
-      message.id = guest;
-    }
-  }
 
   message.style.padding = "4px 10px 8px 10px";
   message.style.fontSize = "14px";
@@ -154,17 +131,56 @@ function display_message(message_text, sender = username) {
   message.style.flexDirection = "column";
   message.style.gap = "0px";
 
-  if (sender === "user") {
-    message.style.alignSelf = "flex-end";
-    message.style.backgroundColor = "#075E54";
-    message.style.color = "#FAFAFA";
-  } else {
-    message.style.alignSelf = "flex-start";
-    message.style.backgroundColor = "#FAFAFA";
-    message.style.color = "#000000";
-  }
-
+  text.innerText = message_text;
   text.style.wordWrap = "break-word";
+
+  if (sender === username) {
+    Object.assign(user.style, {
+      fontSize: "12px",
+      color: "white",
+      fontWeight: "bold",
+      alignSelf: "flex-end",
+    });
+    user.innerHTML = username;
+    Object.assign(message.style, {
+      alignSelf: "flex-end",
+      backgroundColor: "#075E54",
+      color: "#FAFAFA",
+      alignItems: "flex-end",
+    });
+
+    // if last element in chat is user message, don't append username
+    if (chat.children[chat.children.length - 1].id === username) {
+      message.appendChild(text);
+      message.id = username;
+    } else {
+      message.appendChild(user);
+      message.appendChild(text);
+      message.id = username;
+    }
+  } else {
+    Object.assign(user.style, {
+      fontSize: "12px",
+      color: "black",
+      fontWeight: "bold",
+      alignSelf: "flex-start",
+    });
+    user.innerHTML = guest;
+    Object.assign(message.style, {
+      alignSelf: "flex-start",
+      backgroundColor: "#FAFAFA",
+      color: "#000000",
+    });
+
+    if (chat.children[chat.children.length - 1].id === guest) {
+      message.appendChild(text);
+      message.id = guest;
+    } else {
+      message.appendChild(user);
+      message.appendChild(text);
+      message.id = guest;
+    }
+  }
 
   chat.appendChild(message);
 
