@@ -25,12 +25,12 @@ document.querySelector("#create").addEventListener("click", async () => {
 });
 
 // this function generates a random room id
-function generate_room_id() {
+function generate_room_id(len = 8) {
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const charactersLength = characters.length;
   let result = "";
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < len; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;

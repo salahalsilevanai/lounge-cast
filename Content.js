@@ -212,7 +212,7 @@ function setupVideoSyncListeners() {
         Math.round(videoElement.currentTime / 60) +
         ":" +
         Math.round(videoElement.currentTime % 60),
-      "user",
+      username,
     );
   });
 
@@ -227,7 +227,7 @@ function setupVideoSyncListeners() {
         Math.round(videoElement.currentTime / 60) +
         ":" +
         Math.round(videoElement.currentTime % 60),
-      "user",
+      username,
     );
   });
 
@@ -242,7 +242,7 @@ function setupVideoSyncListeners() {
         Math.round(videoElement.currentTime / 60) +
         ":" +
         Math.round(videoElement.currentTime % 60),
-      "user",
+      username,
     );
   });
 }
@@ -307,7 +307,7 @@ chrome.runtime.onMessage.addListener((packet) => {
       break;
 
     case "CHAT_MSG":
-      display_message(packet.text, "other");
+      display_message(packet.text, packet.name);
       break;
   }
 
@@ -337,7 +337,7 @@ function send_message(message) {
 
 chrome.runtime.onMessage.addListener((packet) => {
   if (packet.type === "JOIN") {
-    display_message(packet.name + " joined room: " + packet.room, "user");
+    display_message(packet.name + " joined room: " + packet.room, username);
     chrome.runtime.sendMessage({
       type: "JOIN",
       name: packet.name,
@@ -346,7 +346,7 @@ chrome.runtime.onMessage.addListener((packet) => {
   }
 
   if (packet.type === "LEAVE") {
-    display_message("You left " + packet.room, "user");
+    display_message("You left " + packet.room, username);
     chrome.runtime.sendMessage({
       type: "LEAVE",
     });
