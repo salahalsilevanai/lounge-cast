@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "minimum_chrome_version": "116",
+  "name": "osnTogetherExtention",
+  "version": "1.0.0",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://osnplus.com/*", "https://www.youtube.com/*"],
+      "js": ["Content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
