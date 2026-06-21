@@ -1,4 +1,4 @@
-import { io } from "./socket.io.esm.min.js";
+import { io } from "../socket.io.esm.min.js";
 
 // Force the client to ONLY use WebSockets, bypassing the faulty XHR polling phase
 const socket = io("http://127.0.0.1:3000", {
