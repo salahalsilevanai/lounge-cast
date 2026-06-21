@@ -43,13 +43,53 @@ io.on("connection", (socket) => {
         console.log(roomState);
         break;
       case "CHAT_MSG":
-        console.log(packet.text);
-        console.log(roomState);
+        if (socket.rooms.has(packet.room)) {
+          console.log(socket.id + " chat msg: " + packet.message);
+        }
+        console.log("CHAT_MSG");
+        console.log(packet);
+        break;
+      case "JOIN":
+        if (socket.rooms.has(packet.room)) return;
+        console.log(packet.name + " joined room: " + packet.room);
+        socket.join(packet.room);
+        break;
+      // case "CREATE-JOIN":
+      //   if (socket.rooms.has(packet.room)) return;
+      //   console.log(socket.id + " join room: " + packet.room);
+      //   socket.join(packet.room);
+      //   break;
+      case "LEAVE":
+        const rooms = Array.from(socket.rooms).filter((r) => r !== socket.id);
+        if (rooms.length === 0) return;
+
+        for (const room of rooms) {
+          socket.leave(room);
+          console.log(socket.id + " leave room: " + room);
+        }
         break;
     }
     //Broadcast the updated state to everyone else
+
+    // joined_room = Array.from(socket.rooms).filter((r) => r !== socket.id);
+    // console.log("user has joined this room: " + joined_room);
+    // socket.to(joined_room[0]).emit("watch_party_event", packet);
+
+    //console.log("joined room: " + joined_room[0]);
     socket.broadcast.emit("watch_party_event", packet);
     //socket.emit("watch_party_event", packet);
+
+    socket.on("join-room", (room) => {
+      if (socket.rooms.has(room)) return;
+      socket.join(room);
+      console.log(`Peer joined room: ${room}`);
+    });
+
+    socket.on("leave-room", (room) => {
+      if (!socket.rooms.has(room)) return;
+      console.log(`Peer left room: ${room}`);
+      socket.leave(room);
+    });
   });
 });
 
