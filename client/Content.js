@@ -21,66 +21,31 @@ body.style.width = "calc(100vw - 320px)";
 
 // ---- create the main container ----
 const div = document.createElement("div");
-div.style.zIndex = "1000";
-div.style.backgroundColor = "rgba(30, 30, 30, 0.95)"; // Made it darker so chat text pops nicely
-div.style.height = "100vh";
-div.style.width = "320px";
-div.style.position = "fixed";
-div.style.top = "0";
-div.style.right = "0";
+div.classList.add("main-container");
 body.appendChild(div);
 
 // ---- create the chat container ----
 const chat = document.createElement("div");
-chat.style.height = "calc(100vh - 100px)";
-chat.style.width = "100%";
-chat.style.overflowY = "scroll";
-chat.style.padding = "10px";
-chat.style.boxSizing = "border-box";
-// Add these lines to make it a flex container:
-chat.style.display = "flex";
-chat.style.flexDirection = "column";
-chat.style.gap = "10px"; // Adds space between messages automatically
+chat.classList.add("chat-container");
 div.appendChild(chat);
 
 // ---- create the header ----
 const h1 = document.createElement("h1");
 h1.innerText = "Watch Party Chat";
-h1.style.color = "#FAFAFA";
-h1.style.textAlign = "center";
-h1.style.fontSize = "20px";
+h1.classList.add("header");
 chat.appendChild(h1);
 
 // ---- create the input field ----
 const input = document.createElement("input");
 input.type = "text";
-input.style.width = "calc(100% - 20px)";
-input.style.height = "40px";
-input.style.fontSize = "14px";
-input.style.padding = "10px";
-input.style.boxSizing = "border-box";
-input.style.margin = "0 10px";
-input.style.borderRadius = "15px";
-input.style.border = "none";
 input.placeholder = "Type your message here...";
-input.style.marginBottom = "10px";
-input.style.outline = "none";
+input.classList.add("input");
 div.appendChild(input);
 
 // ---- create the send button ----
 const send = document.createElement("button");
 send.innerText = "Send";
-send.style.width = "calc(100% - 20px)";
-send.style.height = "40px";
-send.style.fontSize = "14px";
-send.style.padding = "10px";
-send.style.boxSizing = "border-box";
-send.style.margin = "0 10px";
-send.style.borderRadius = "15px";
-send.style.border = "none";
-send.style.backgroundColor = "#075E54";
-send.style.color = "#FAFAFA";
-send.style.cursor = "pointer";
+send.classList.add("send");
 div.appendChild(send);
 
 // ---- make the Enter key funtional in the input field ----
@@ -122,32 +87,15 @@ function display_message(message_text, sender) {
   const user = document.createElement("p");
   const text = document.createElement("p");
 
-  message.style.padding = "4px 10px 8px 10px";
-  message.style.fontSize = "14px";
-  message.style.borderRadius = "15px";
-  message.style.width = "fit-content";
-  message.style.maxWidth = "80%";
-  message.style.display = "flex";
-  message.style.flexDirection = "column";
-  message.style.gap = "0px";
+  message.classList.add("message");
 
   text.innerText = message_text;
-  text.style.wordWrap = "break-word";
+  text.classList.add("message-text");
 
   if (sender === username) {
-    Object.assign(user.style, {
-      fontSize: "12px",
-      color: "white",
-      fontWeight: "bold",
-      alignSelf: "flex-end",
-    });
+    user.classList.add("message-username", "sender");
+    message.classList.add("sender-message");
     user.innerHTML = username;
-    Object.assign(message.style, {
-      alignSelf: "flex-end",
-      backgroundColor: "#075E54",
-      color: "#FAFAFA",
-      alignItems: "flex-end",
-    });
 
     // if last element in chat is user message, don't append username
     if (chat.children[chat.children.length - 1].id === username) {
@@ -159,18 +107,9 @@ function display_message(message_text, sender) {
       message.id = username;
     }
   } else {
-    Object.assign(user.style, {
-      fontSize: "12px",
-      color: "black",
-      fontWeight: "bold",
-      alignSelf: "flex-start",
-    });
+    user.classList.add("message-username", "receiver");
     user.innerHTML = guest;
-    Object.assign(message.style, {
-      alignSelf: "flex-start",
-      backgroundColor: "#FAFAFA",
-      color: "#000000",
-    });
+    message.classList.add("receiver-message");
 
     if (chat.children[chat.children.length - 1].id === guest) {
       message.appendChild(text);

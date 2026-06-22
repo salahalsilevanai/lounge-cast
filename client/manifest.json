@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "minimum_chrome_version": "116",
-  "name": "osnTogetherExtention",
-  "version": "1.0.0",
+  "name": "Lounge Cast",
+  "version": "1.0.1",
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -10,7 +10,8 @@
   "content_scripts": [
     {
       "matches": ["https://osnplus.com/*", "https://www.youtube.com/*"],
-      "js": ["Content.js"]
+      "js": ["Content.js"],
+      "css": ["Content.css"]
     }
   ],
   "host_permissions": ["http://localhost:3000/", "http://127.0.0.1:3000/"],
