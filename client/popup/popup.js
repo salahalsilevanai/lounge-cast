@@ -73,9 +73,3 @@ function generate_username() {
   }
   return result;
 }
-
-const username = document.querySelector("#username-btn");
-username.addEventListener("click", () => {
-  const name = generate_username();
-  document.querySelector("#name").value = name;
-});

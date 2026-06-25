@@ -3,6 +3,10 @@ let isIncomingSyncAction = false; // Prevents infinite reflection loops
 
 let isSyncing = false;
 
+// --------------------- check later
+
+let username = "Anonymous";
+
 // ---- find the video element ----
 function check_video() {
   videoElement = document.querySelector("video");
@@ -60,15 +64,11 @@ div.addEventListener(
   true,
 );
 
-// --------------------- check later
-
-let username = "Anonymous";
-
 // ---- send the message when the send button is clicked ----
 send.addEventListener("click", () => {
   const message = input.value;
   if (message) {
-    display_message(message, username);
+    display_message(message, username, "outbound");
     send_message(message);
     input.value = "";
   }
@@ -86,50 +86,44 @@ input.addEventListener(
 );
 
 // ----------------------------------- re write the message function
+// ---- display the message (dynamic) --اد--
+// Ensure this variable matches what you compare against!
 
 // ---- display the message (dynamic) ----
-function display_message(message_text, sender) {
-  const message_user = document.createElement("p");
-  const message = document.createElement("div");
-  const message_text = document.createElement("p");
+function display_message(message_text, sender, direction) {
+  // 1. Create elements
+  const messageContainer = document.createElement("div");
+  const messageUser = document.createElement("p");
+  const textElement = document.createElement("p");
 
-  message.classList.add("message");
+  messageContainer.classList.add("message");
+  textElement.classList.add("message-text");
+  messageUser.classList.add("message-username");
 
-  text.innerText = message_text;
-  text.classList.add("message-text");
+  // 2. Assign content
+  textElement.innerText = message_text;
+  messageUser.innerText = sender;
 
-  if (sender === username) {
-    user.classList.add("message-username", "sender");
-    message.classList.add("sender-message");
-    user.innerHTML = username;
-
-    // if last element in chat is user message, don't append username
-    if (chat.children[chat.children.length - 1].id === username) {
-      message.appendChild(text);
-      message.id = username;
-    } else {
-      message.appendChild(user);
-      message.appendChild(text);
-      message.id = username;
-    }
+  // 3. Determine message styling layout based on sender
+  if (direction === "outbound") {
+    // Sent by current user
+    messageContainer.classList.add("sender-message");
+    messageUser.classList.add("sender");
   } else {
-    user.classList.add("message-username", "receiver");
-    user.innerHTML = guest;
-    message.classList.add("receiver-message");
-
-    if (chat.children[chat.children.length - 1].id === guest) {
-      message.appendChild(text);
-      message.id = guest;
-    } else {
-      message.appendChild(user);
-      message.appendChild(text);
-      message.id = guest;
-    }
+    // Sent by a peer/guest
+    messageContainer.classList.add("receiver-message");
+    messageUser.classList.add("receiver");
   }
 
-  chat.appendChild(message);
+  // 4. Clean up structure: group tracking id on container element
+  messageContainer.id = sender;
 
-  // This will now work perfectly because flex elements have real heights!
+  // 5. Build and append
+  messageContainer.appendChild(messageUser);
+  messageContainer.appendChild(textElement);
+  chat.appendChild(messageContainer);
+
+  // 6. Smooth scroll to the bottom
   chat.scrollTop = chat.scrollHeight;
 }
 
@@ -140,8 +134,12 @@ document.addEventListener("keydown", function (event) {
   if (event.key === "p") videoElement.pause();
   if (event.key === "s") videoElement.play();
   if (event.key === "r") videoElement.currentTime = 0;
-  if (event.key === "l") videoElement.currentTime += 10;
-  if (event.key === "j") videoElement.currentTime -= 10;
+  if (event.key === "l") {
+    videoElement.currentTime += 10;
+  }
+  if (event.key === "j") {
+    videoElement.currentTime -= 10;
+  }
 });
 
 // -------------------------------------- check it later
@@ -161,6 +159,7 @@ function setupVideoSyncListeners() {
         ":" +
         Math.round(videoElement.currentTime % 60),
       username,
+      "outbound",
     );
   });
 
@@ -176,6 +175,7 @@ function setupVideoSyncListeners() {
         ":" +
         Math.round(videoElement.currentTime % 60),
       username,
+      "outbound",
     );
   });
 
@@ -191,6 +191,7 @@ function setupVideoSyncListeners() {
         ":" +
         Math.round(videoElement.currentTime % 60),
       username,
+      "outbound",
     );
   });
 }
@@ -226,7 +227,7 @@ chrome.runtime.onMessage.addListener((packet) => {
           Math.round(packet.time / 60) +
           ":" +
           Math.round(packet.time % 60),
-        "other",
+        username,
       );
       //}
       videoElement.play().catch(() => {});
@@ -240,7 +241,7 @@ chrome.runtime.onMessage.addListener((packet) => {
           Math.round(packet.time / 60) +
           ":" +
           Math.round(packet.time % 60),
-        "other",
+        username,
       );
       break;
 
@@ -251,12 +252,12 @@ chrome.runtime.onMessage.addListener((packet) => {
           Math.round(packet.time / 60) +
           ":" +
           Math.round(packet.time % 60),
-        "other",
+        username,
       );
       break;
 
     case "CHAT_MSG":
-      display_message(packet.text, packet.name);
+      display_message(packet.text, packet.name, "inbound");
       break;
   }
 
@@ -270,6 +271,7 @@ function send_message(message) {
   chrome.runtime.sendMessage({
     type: "CHAT_MSG",
     text: message,
+    name: username,
   });
 }
 
