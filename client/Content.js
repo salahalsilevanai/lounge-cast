@@ -5,7 +5,7 @@ let isSyncing = false;
 
 // --------------------- check later
 
-let username = "Anonymous";
+let username = "salah";
 
 // ---- find the video element ----
 function check_video() {
@@ -301,5 +301,18 @@ chrome.runtime.onMessage.addListener((packet) => {
     chrome.runtime.sendMessage({
       type: "LEAVE",
     });
+  }
+});
+
+chrome.runtime.onMessage.addListener((packet) => {
+  if (packet.type === "CHANGE-NAME") {
+    tmpusr = username;
+    username = packet.name;
+    display_message(
+      "You changed your name to: " + username,
+      username,
+      "outbound",
+    );
+    send_message(tmpusr + " changed their name to: " + username);
   }
 });

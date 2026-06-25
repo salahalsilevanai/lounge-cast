@@ -73,3 +73,18 @@ function generate_username() {
   }
   return result;
 }
+
+const name_btn = document
+  .querySelector("#username-btn")
+  .addEventListener("click", async () => {
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (tab && tab.id) {
+      chrome.tabs.sendMessage(tab.id, {
+        type: "CHANGE-NAME",
+        name: document.querySelector("#name").value,
+      });
+    }
+  });
