@@ -10,6 +10,7 @@ function check_video() {
     setTimeout(check_video, 500);
   } else {
     console.log("Video element found!");
+    // ----------------------------- recheck this function
     setupVideoSyncListeners();
   }
 }
@@ -50,7 +51,7 @@ div.appendChild(send);
 
 // ---- make the Enter key funtional in the input field ----
 div.addEventListener(
-  "keydown" || "keyup" || "keypress",
+  "keydown",
   (e) => {
     if (e.key !== "Enter") {
       e.stopPropagation();
@@ -59,8 +60,9 @@ div.addEventListener(
   true,
 );
 
+// --------------------- check later
+
 let username = "Anonymous";
-let guest = "Anonymous1";
 
 // ---- send the message when the send button is clicked ----
 send.addEventListener("click", () => {
@@ -74,18 +76,22 @@ send.addEventListener("click", () => {
 
 // ---- send the message when the Enter key is pressed ----
 input.addEventListener(
-  "keydown" || "keypress" || "keyup",
+  "keydown",
   (e) => {
-    if (e.key === "Enter") send.click();
+    if (e.key === "Enter") {
+      send.click();
+    }
   },
   true,
 );
 
+// ----------------------------------- re write the message function
+
 // ---- display the message (dynamic) ----
 function display_message(message_text, sender) {
+  const message_user = document.createElement("p");
   const message = document.createElement("div");
-  const user = document.createElement("p");
-  const text = document.createElement("p");
+  const message_text = document.createElement("p");
 
   message.classList.add("message");
 
@@ -134,8 +140,11 @@ document.addEventListener("keydown", function (event) {
   if (event.key === "p") videoElement.pause();
   if (event.key === "s") videoElement.play();
   if (event.key === "r") videoElement.currentTime = 0;
+  if (event.key === "l") videoElement.currentTime += 10;
+  if (event.key === "j") videoElement.currentTime -= 10;
 });
 
+// -------------------------------------- check it later
 // --- 1. LOCAL EVENT LISTENERS (Sent outward to peers) ---
 function setupVideoSyncListeners() {
   if (!videoElement) return;
@@ -186,6 +195,7 @@ function setupVideoSyncListeners() {
   });
 }
 
+// -------------------------------------- check it later
 // --- 2. INBOUND SYNC ACTIONS (Received from server) ---
 chrome.runtime.onMessage.addListener((packet) => {
   if (!videoElement) return;

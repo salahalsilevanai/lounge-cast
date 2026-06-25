@@ -12,7 +12,7 @@ document.querySelector("#create").addEventListener("click", async () => {
   // send the room id to the content script
   name = document.querySelector("#name").value;
   if (name.trim() === "") {
-    name = "Anonymous";
+    name = generate_username();
   }
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab && tab.id) {
@@ -37,7 +37,7 @@ function generate_room_id(len = 8) {
 }
 
 // this function sends a join request to the content script with the room id and name
-const join = document.querySelector("#button");
+const join = document.querySelector("#join-btn");
 join.addEventListener("click", async () => {
   const room = document.querySelector("#room").value;
   if (room.trim() === "") {
@@ -45,7 +45,7 @@ join.addEventListener("click", async () => {
   }
   const name = document.querySelector("#name").value;
   if (room.trim() === "") {
-    name = "Anonymous";
+    name = generate_username();
   }
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab && tab.id) {
@@ -63,4 +63,19 @@ leave.addEventListener("click", async () => {
   if (tab && tab.id) {
     chrome.tabs.sendMessage(tab.id, { type: "LEAVE" });
   }
+});
+
+// this function generates a random username
+function generate_username() {
+  let result = "user_";
+  for (let i = 0; i < 6; i++) {
+    result += Math.floor(Math.random() * 10);
+  }
+  return result;
+}
+
+const username = document.querySelector("#username-btn");
+username.addEventListener("click", () => {
+  const name = generate_username();
+  document.querySelector("#name").value = name;
 });
