@@ -15,7 +15,7 @@
     }
   ],
   "host_permissions": ["http://localhost:3000/", "http://127.0.0.1:3000/"],
-  "permissions": ["activeTab", "tabs"],
+  "permissions": ["activeTab", "tabs", "storage"],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": "assets/icon.png"

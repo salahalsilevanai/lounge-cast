@@ -48,6 +48,7 @@ io.on("connection", (socket) => {
         }
         console.log("CHAT_MSG");
         console.log(packet);
+        socket.to(packet.room).emit("watch_party_event", packet);
         break;
       case "JOIN":
         if (socket.rooms.has(packet.room)) return;
@@ -76,8 +77,8 @@ io.on("connection", (socket) => {
     // socket.to(joined_room[0]).emit("watch_party_event", packet);
 
     //console.log("joined room: " + joined_room[0]);
-    //socket.broadcast.emit("watch_party_event", packet);
-    socket.emit("watch_party_event", packet);
+    socket.broadcast.emit("watch_party_event", packet);
+    //socket.emit("watch_party_event", packet);
 
     socket.on("join-room", (room) => {
       if (socket.rooms.has(room)) return;

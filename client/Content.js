@@ -4,8 +4,23 @@ let isIncomingSyncAction = false; // Prevents infinite reflection loops
 let isSyncing = false;
 
 // --------------------- check later
+async function getUsername() {
+  username = await chrome.storage.local
+    .get({ username: "username" })
+    .then((result) => {
+      return result.username;
+    });
+}
+getUsername();
+document.addEventListener("DOMContentLoaded", async () => {
+  username = await chrome.storage.local
+    .get({ username: "username" })
+    .then((result) => {
+      return result.username;
+    });
 
-let username = "salah";
+  display_message(username, username, "outbound");
+});
 
 // ---- find the video element ----
 function check_video() {
@@ -119,6 +134,7 @@ function display_message(message_text, sender, direction) {
   messageContainer.id = sender;
 
   // 5. Build and append
+
   messageContainer.appendChild(messageUser);
   messageContainer.appendChild(textElement);
   chat.appendChild(messageContainer);
@@ -304,12 +320,29 @@ chrome.runtime.onMessage.addListener((packet) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((packet) => {
+chrome.runtime.onMessage.addListener(async (packet) => {
   if (packet.type === "CHANGE-NAME") {
     tmpusr = username;
-    username = packet.name;
+    chrome.storage.local.set({ username: packet.name }).then(() => {
+      display_message(
+        "You changed your name to local: " + packet.name,
+        username,
+        "outbound",
+      );
+    });
+
+    username = await chrome.storage.local
+      .get({ username: "username" })
+      .then((result) => {
+        return result.username;
+      });
+
+    // username = await chrome.storage.local
+    //   .get({ username: "guest" })
+    //   .then((result) => result.username);
+
     display_message(
-      "You changed your name to: " + username,
+      "You changed your name to storage: " + username,
       username,
       "outbound",
     );
