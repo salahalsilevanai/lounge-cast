@@ -4,23 +4,24 @@ let isIncomingSyncAction = false; // Prevents infinite reflection loops
 let isSyncing = false;
 
 // --------------------- check later
+
+// this function generates a random username
+function generate_username() {
+  let result = "user_";
+  for (let i = 0; i < 6; i++) {
+    result += Math.floor(Math.random() * 10);
+  }
+  return result;
+}
+
 async function getUsername() {
   username = await chrome.storage.local
-    .get({ username: "username" })
+    .get({ username: generate_username() })
     .then((result) => {
       return result.username;
     });
 }
 getUsername();
-document.addEventListener("DOMContentLoaded", async () => {
-  username = await chrome.storage.local
-    .get({ username: "username" })
-    .then((result) => {
-      return result.username;
-    });
-
-  display_message(username, username, "outbound");
-});
 
 // ---- find the video element ----
 function check_video() {
@@ -332,20 +333,9 @@ chrome.runtime.onMessage.addListener(async (packet) => {
     });
 
     username = await chrome.storage.local
-      .get({ username: "username" })
-      .then((result) => {
-        return result.username;
-      });
+      .get({ username: "guest" })
+      .then((result) => result.username);
 
-    // username = await chrome.storage.local
-    //   .get({ username: "guest" })
-    //   .then((result) => result.username);
-
-    display_message(
-      "You changed your name to storage: " + username,
-      username,
-      "outbound",
-    );
     send_message(tmpusr + " changed their name to: " + username);
   }
 });

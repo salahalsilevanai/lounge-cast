@@ -65,15 +65,6 @@ leave.addEventListener("click", async () => {
   }
 });
 
-// this function generates a random username
-function generate_username() {
-  let result = "user_";
-  for (let i = 0; i < 6; i++) {
-    result += Math.floor(Math.random() * 10);
-  }
-  return result;
-}
-
 const name_btn = document
   .querySelector("#username-btn")
   .addEventListener("click", async () => {
@@ -88,3 +79,25 @@ const name_btn = document
       });
     }
   });
+
+let username;
+async function refreshUsername() {
+  username = await chrome.storage.local
+    .get({ username: generate_username() })
+    .then((result) => result.username);
+  return username;
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await refreshUsername().then((fetchedUsername) => {
+    document.querySelector("#name").value = fetchedUsername;
+  });
+});
+
+function generate_username() {
+  let result = "user_";
+  for (let i = 0; i < 6; i++) {
+    result += Math.floor(Math.random() * 10);
+  }
+  return result;
+}
