@@ -1,9 +1,7 @@
 let videoElement = null;
-let isIncomingSyncAction = false; // Prevents infinite reflection loops
-
 let isSyncing = false;
-
-// --------------------- check later
+let username = null;
+let room = null;
 
 // this function generates a random username
 function generate_username() {
@@ -20,6 +18,10 @@ async function getUsername() {
     .then((result) => {
       return result.username;
     });
+}
+async function getUsername() {
+  result = await chrome.storage.get({ username: generate_username() });
+  username = result.username;
 }
 getUsername();
 
@@ -165,11 +167,14 @@ function setupVideoSyncListeners() {
   if (!videoElement) return;
 
   videoElement.addEventListener("play", () => {
-    if (isSyncing) return; // Block outgoing socket message if triggered by a peer action
+    if (isSyncing || !room) return; // Block outgoing socket message if triggered by a peer action
+
     chrome.runtime.sendMessage({
       type: "VIDEO_PLAY",
       time: videoElement.currentTime,
+      room: room,
     });
+
     display_message(
       "Playing at " +
         Math.round(videoElement.currentTime / 60) +
@@ -185,6 +190,7 @@ function setupVideoSyncListeners() {
     chrome.runtime.sendMessage({
       type: "VIDEO_PAUSE",
       time: videoElement.currentTime,
+      room: room,
     });
     display_message(
       "Paused at " +
@@ -201,6 +207,7 @@ function setupVideoSyncListeners() {
     chrome.runtime.sendMessage({
       type: "VIDEO_SEEK",
       time: videoElement.currentTime,
+      room: room,
     });
     display_message(
       "Seeking to " +
@@ -289,23 +296,14 @@ function send_message(message) {
     type: "CHAT_MSG",
     text: message,
     name: username,
+    room: room,
   });
 }
-
-// chrome.runtime.onMessage.addListener((packet) => {
-//   if (packet.type === "CREATE-ROOM") {
-//     display_message("Room ID: " + packet.room, "user", true);
-//     chrome.runtime.sendMessage({
-//       type: "CREATE-JOIN",
-//       name: packet.name,
-//       room: packet.room,
-//     });
-//   }
-// });
 
 chrome.runtime.onMessage.addListener((packet) => {
   if (packet.type === "JOIN") {
     display_message(packet.name + " joined room: " + packet.room, username);
+    room = packet.room;
     chrome.runtime.sendMessage({
       type: "JOIN",
       name: packet.name,
@@ -315,8 +313,10 @@ chrome.runtime.onMessage.addListener((packet) => {
 
   if (packet.type === "LEAVE") {
     display_message("You left " + packet.room, username);
+    room = null;
     chrome.runtime.sendMessage({
       type: "LEAVE",
+      room: packet.room,
     });
   }
 });
