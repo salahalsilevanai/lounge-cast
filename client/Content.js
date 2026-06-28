@@ -3,6 +3,8 @@ let videoElement = null;
 let isSyncing = false;
 let username = null;
 let room = null;
+let URL = window.location.href;
+let TMPURL = URL;
 
 // this function generates a random username
 function generate_username() {
@@ -24,11 +26,14 @@ getUsername();
 
 // ---- find the video element ----
 function check_video() {
+  //const ytPlayer = document.getElementById("movie_player");
   const currentVideo = document.querySelector("video");
+
   if (!currentVideo) {
     videoElement = null;
     return;
   }
+
   if (!currentVideo.dataset.partyId) {
     console.log("New video found!");
 
@@ -43,6 +48,15 @@ function check_video() {
 // every 1 second, check for the video element
 check_video();
 setInterval(check_video, 1000);
+
+setInterval(() => {
+  URL = window.location.href;
+  if (TMPURL !== URL) {
+    TMPURL = URL;
+    display_message("User started next episode", username, "outbound");
+    check_video();
+  }
+}, 1000);
 
 // ---- move over the body element ----
 const body = document.querySelector("body");
@@ -114,7 +128,7 @@ input.addEventListener(
 // Ensure this variable matches what you compare against!
 
 // ---- display the message (dynamic) ----
-function display_message(message_text, sender, direction) {
+function display_message(message_text, sender, type) {
   // 1. Create elements
   const messageContainer = document.createElement("div");
   const messageUser = document.createElement("p");
@@ -129,7 +143,7 @@ function display_message(message_text, sender, direction) {
   messageUser.innerText = sender;
 
   // 3. Determine message styling layout based on sender
-  if (direction === "outbound") {
+  if (type === "outbound") {
     // Sent by current user
     messageContainer.classList.add("sender-message");
     messageUser.classList.add("sender");
@@ -351,18 +365,6 @@ chrome.runtime.onMessage.addListener(async (packet) => {
   }
 });
 
-function check_room() {
-  if (!room) {
-    div.classList.add("hidden");
-    body.style.width = 100 + "vw";
-  } else {
-    div.classList.remove("hidden");
-    body.style.width = "calc(100vw - 320px)";
-  }
-}
-
-check_room();
-
 function toggle_chat() {
   if (div.classList.contains("hidden")) {
     div.classList.remove("hidden");
@@ -374,7 +376,7 @@ function toggle_chat() {
 }
 
 const toggleButton = document.createElement("button");
-toggleButton.innerText = "Toggle Chat";
+toggleButton.innerText = "Chat";
 toggleButton.addEventListener("click", toggle_chat);
 body.appendChild(toggleButton);
 // fixed position of toggle bottom and make it float on top
@@ -382,7 +384,7 @@ toggleButton.style.zIndex = 1000;
 toggleButton.style.position = "fixed";
 toggleButton.style.bottom = "10px";
 toggleButton.style.right = "10px";
-toggleButton.style.width = "100px";
+toggleButton.style.width = "60px";
 toggleButton.style.height = "40px";
 toggleButton.style.backgroundColor = "white";
 toggleButton.style.color = "black";
@@ -390,3 +392,17 @@ toggleButton.style.border = "none";
 toggleButton.style.borderRadius = "15px";
 toggleButton.style.cursor = "pointer";
 toggleButton.style.opacity = "0.8";
+
+function check_room() {
+  if (!room) {
+    toggleButton.classList.add("hidden");
+    div.classList.add("hidden");
+    body.style.width = 100 + "vw";
+  } else {
+    toggleButton.classList.remove("hidden");
+    div.classList.remove("hidden");
+    body.style.width = "calc(100vw - 320px)";
+  }
+}
+
+check_room();
