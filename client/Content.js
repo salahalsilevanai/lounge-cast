@@ -197,10 +197,7 @@ function setupVideoSyncListeners(targetVideo, assignedId) {
     });
 
     display_message(
-      "Playing at " +
-        Math.round(targetVideo.currentTime / 60) +
-        ":" +
-        Math.round(targetVideo.currentTime % 60),
+      "Playing at " + format_time(targetVideo.currentTime),
       username,
       "outbound",
     );
@@ -215,10 +212,7 @@ function setupVideoSyncListeners(targetVideo, assignedId) {
       room: room,
     });
     display_message(
-      "Paused at " +
-        Math.round(targetVideo.currentTime / 60) +
-        ":" +
-        Math.round(targetVideo.currentTime % 60),
+      "Paused at " + format_time(targetVideo.currentTime),
       username,
       "outbound",
     );
@@ -233,10 +227,7 @@ function setupVideoSyncListeners(targetVideo, assignedId) {
       room: room,
     });
     display_message(
-      "Seeking to " +
-        Math.round(targetVideo.currentTime / 60) +
-        ":" +
-        Math.round(targetVideo.currentTime % 60),
+      "Seeking to " + format_time(targetVideo.currentTime),
       username,
       "outbound",
     );
@@ -269,13 +260,7 @@ chrome.runtime.onMessage.addListener((packet) => {
       // If client is more than 1.5s out of sync, snap them to the exact peer time
       //if (Math.abs(videoElement.currentTime - packet.time) > 1.5) {
       videoElement.currentTime = packet.time;
-      display_message(
-        "Played at " +
-          Math.round(packet.time / 60) +
-          ":" +
-          Math.round(packet.time % 60),
-        username,
-      );
+      display_message("Played at " + format_time(packet.time), username);
       //}
       videoElement.play().catch(() => {});
       break;
@@ -283,24 +268,12 @@ chrome.runtime.onMessage.addListener((packet) => {
     case "VIDEO_PAUSE":
       videoElement.currentTime = packet.time;
       videoElement.pause();
-      display_message(
-        "Paused at " +
-          Math.round(packet.time / 60) +
-          ":" +
-          Math.round(packet.time % 60),
-        username,
-      );
+      display_message("Paused at " + format_time(packet.time), username);
       break;
 
     case "VIDEO_SEEK":
       targetVideo.currentTime = packet.time;
-      display_message(
-        "Seeked to " +
-          Math.round(packet.time / 60) +
-          ":" +
-          Math.round(packet.time % 60),
-        username,
-      );
+      display_message("Seeked to " + format_time(packet.time), username);
       break;
 
     case "CHAT_MSG":
@@ -406,3 +379,23 @@ function check_room() {
 }
 
 check_room();
+
+function format_time(time) {
+  if (!time) return "00:00";
+  // if time is more than one hour, show hours
+  let result = "";
+  if (time > 3600) {
+    result =
+      String(Math.floor(time / 3600)).padStart(2, "0") +
+      ":" +
+      String(Math.round((time % 3600) / 60)).padStart(2, "0") +
+      ":" +
+      String(Math.round(time % 60)).padStart(2, "0");
+  } else {
+    result =
+      String(Math.round(time / 60)).padStart(2, "0") +
+      ":" +
+      String(Math.round(time % 60)).padStart(2, "0");
+  }
+  return result;
+}
