@@ -1,3 +1,4 @@
+let currentVideoId = null;
 let videoElement = null;
 let isSyncing = false;
 let username = null;
@@ -19,24 +20,29 @@ async function getUsername() {
       return result.username;
     });
 }
-async function getUsername() {
-  result = await chrome.storage.get({ username: generate_username() });
-  username = result.username;
-}
 getUsername();
 
 // ---- find the video element ----
 function check_video() {
-  videoElement = document.querySelector("video");
-  if (!videoElement) {
-    setTimeout(check_video, 500);
-  } else {
-    console.log("Video element found!");
-    // ----------------------------- recheck this function
-    setupVideoSyncListeners();
+  const currentVideo = document.querySelector("video");
+  if (!currentVideo) {
+    videoElement = null;
+    return;
+  }
+  if (!currentVideo.dataset.partyId) {
+    console.log("New video found!");
+
+    currentVideoId = "vid_" + Math.random().toString(36).substr(2, 9);
+    currentVideo.dataset.partyId = currentVideoId;
+    videoElement = currentVideo;
+
+    setupVideoSyncListeners(currentVideo, currentVideoId);
   }
 }
+
+// every 1 second, check for the video element
 check_video();
+setInterval(check_video, 1000);
 
 // ---- move over the body element ----
 const body = document.querySelector("body");
@@ -54,7 +60,7 @@ div.appendChild(chat);
 
 // ---- create the header ----
 const h1 = document.createElement("h1");
-h1.innerText = "Watch Party Chat";
+h1.innerText = "Lounge Cast Chat";
 h1.classList.add("header");
 chat.appendChild(h1);
 
@@ -163,57 +169,60 @@ document.addEventListener("keydown", function (event) {
 
 // -------------------------------------- check it later
 // --- 1. LOCAL EVENT LISTENERS (Sent outward to peers) ---
-function setupVideoSyncListeners() {
-  if (!videoElement) return;
+function setupVideoSyncListeners(targetVideo, assignedId) {
+  if (!targetVideo) return;
 
-  videoElement.addEventListener("play", () => {
+  targetVideo.addEventListener("play", () => {
+    if (assignedId != currentVideoId) return;
     if (isSyncing || !room) return; // Block outgoing socket message if triggered by a peer action
 
     chrome.runtime.sendMessage({
       type: "VIDEO_PLAY",
-      time: videoElement.currentTime,
+      time: targetVideo.currentTime,
       room: room,
     });
 
     display_message(
       "Playing at " +
-        Math.round(videoElement.currentTime / 60) +
+        Math.round(targetVideo.currentTime / 60) +
         ":" +
-        Math.round(videoElement.currentTime % 60),
+        Math.round(targetVideo.currentTime % 60),
       username,
       "outbound",
     );
   });
 
-  videoElement.addEventListener("pause", () => {
-    if (isSyncing) return;
+  targetVideo.addEventListener("pause", () => {
+    if (assignedId != currentVideoId) return;
+    if (isSyncing || !room) return;
     chrome.runtime.sendMessage({
       type: "VIDEO_PAUSE",
-      time: videoElement.currentTime,
+      time: targetVideo.currentTime,
       room: room,
     });
     display_message(
       "Paused at " +
-        Math.round(videoElement.currentTime / 60) +
+        Math.round(targetVideo.currentTime / 60) +
         ":" +
-        Math.round(videoElement.currentTime % 60),
+        Math.round(targetVideo.currentTime % 60),
       username,
       "outbound",
     );
   });
 
-  videoElement.addEventListener("seeking", () => {
-    if (isSyncing) return;
+  targetVideo.addEventListener("seeking", () => {
+    if (assignedId != currentVideoId) return;
+    if (isSyncing || !room) return;
     chrome.runtime.sendMessage({
       type: "VIDEO_SEEK",
-      time: videoElement.currentTime,
+      time: targetVideo.currentTime,
       room: room,
     });
     display_message(
       "Seeking to " +
-        Math.round(videoElement.currentTime / 60) +
+        Math.round(targetVideo.currentTime / 60) +
         ":" +
-        Math.round(videoElement.currentTime % 60),
+        Math.round(targetVideo.currentTime % 60),
       username,
       "outbound",
     );
@@ -270,7 +279,7 @@ chrome.runtime.onMessage.addListener((packet) => {
       break;
 
     case "VIDEO_SEEK":
-      videoElement.currentTime = packet.time;
+      targetVideo.currentTime = packet.time;
       display_message(
         "Seeked to " +
           Math.round(packet.time / 60) +
@@ -304,6 +313,7 @@ chrome.runtime.onMessage.addListener((packet) => {
   if (packet.type === "JOIN") {
     display_message(packet.name + " joined room: " + packet.room, username);
     room = packet.room;
+    check_room();
     chrome.runtime.sendMessage({
       type: "JOIN",
       name: packet.name,
@@ -314,6 +324,7 @@ chrome.runtime.onMessage.addListener((packet) => {
   if (packet.type === "LEAVE") {
     display_message("You left " + packet.room, username);
     room = null;
+    check_room();
     chrome.runtime.sendMessage({
       type: "LEAVE",
       room: packet.room,
@@ -339,3 +350,43 @@ chrome.runtime.onMessage.addListener(async (packet) => {
     send_message(tmpusr + " changed their name to: " + username);
   }
 });
+
+function check_room() {
+  if (!room) {
+    div.classList.add("hidden");
+    body.style.width = 100 + "vw";
+  } else {
+    div.classList.remove("hidden");
+    body.style.width = "calc(100vw - 320px)";
+  }
+}
+
+check_room();
+
+function toggle_chat() {
+  if (div.classList.contains("hidden")) {
+    div.classList.remove("hidden");
+    body.style.width = "calc(100vw - 320px)";
+  } else {
+    div.classList.add("hidden");
+    body.style.width = 100 + "vw";
+  }
+}
+
+const toggleButton = document.createElement("button");
+toggleButton.innerText = "Toggle Chat";
+toggleButton.addEventListener("click", toggle_chat);
+body.appendChild(toggleButton);
+// fixed position of toggle bottom and make it float on top
+toggleButton.style.zIndex = 1000;
+toggleButton.style.position = "fixed";
+toggleButton.style.bottom = "10px";
+toggleButton.style.right = "10px";
+toggleButton.style.width = "100px";
+toggleButton.style.height = "40px";
+toggleButton.style.backgroundColor = "white";
+toggleButton.style.color = "black";
+toggleButton.style.border = "none";
+toggleButton.style.borderRadius = "15px";
+toggleButton.style.cursor = "pointer";
+toggleButton.style.opacity = "0.8";
