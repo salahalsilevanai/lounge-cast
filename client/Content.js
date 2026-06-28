@@ -193,6 +193,7 @@ function setupVideoSyncListeners(targetVideo, assignedId) {
     chrome.runtime.sendMessage({
       type: "VIDEO_PLAY",
       time: targetVideo.currentTime,
+      name: username,
       room: room,
     });
 
@@ -209,6 +210,7 @@ function setupVideoSyncListeners(targetVideo, assignedId) {
     chrome.runtime.sendMessage({
       type: "VIDEO_PAUSE",
       time: targetVideo.currentTime,
+      name: username,
       room: room,
     });
     display_message(
@@ -224,6 +226,7 @@ function setupVideoSyncListeners(targetVideo, assignedId) {
     chrome.runtime.sendMessage({
       type: "VIDEO_SEEK",
       time: targetVideo.currentTime,
+      name: username,
       room: room,
     });
     display_message(
@@ -260,7 +263,7 @@ chrome.runtime.onMessage.addListener((packet) => {
       // If client is more than 1.5s out of sync, snap them to the exact peer time
       //if (Math.abs(videoElement.currentTime - packet.time) > 1.5) {
       videoElement.currentTime = packet.time;
-      display_message("Played at " + format_time(packet.time), username);
+      display_message("Played at " + format_time(packet.time), packet.name);
       //}
       videoElement.play().catch(() => {});
       break;
@@ -268,12 +271,12 @@ chrome.runtime.onMessage.addListener((packet) => {
     case "VIDEO_PAUSE":
       videoElement.currentTime = packet.time;
       videoElement.pause();
-      display_message("Paused at " + format_time(packet.time), username);
+      display_message("Paused at " + format_time(packet.time), packet.name);
       break;
 
     case "VIDEO_SEEK":
       targetVideo.currentTime = packet.time;
-      display_message("Seeked to " + format_time(packet.time), username);
+      display_message("Seeked to " + format_time(packet.time), packet.name);
       break;
 
     case "CHAT_MSG":
