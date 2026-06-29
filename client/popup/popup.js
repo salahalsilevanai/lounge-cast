@@ -2,6 +2,11 @@
 const room_field = document.querySelector("#room");
 const name_field = document.querySelector("#name");
 
+const leave = document.querySelector(".leave");
+if (!room) {
+  leave.style.display = "none";
+}
+
 document.querySelector("#create").addEventListener("click", async () => {
   let room = room_field.value.trim();
 
@@ -11,7 +16,7 @@ document.querySelector("#create").addEventListener("click", async () => {
   room_field.value = room;
 
   chrome.storage.local.set({ room: room });
-
+  leave.style.display = "block";
   // send the room id to the content script
   let name = name_field.value.trim();
   if (name === "") {
@@ -35,12 +40,14 @@ join.addEventListener("click", async () => {
   if (room === "") {
     return;
   }
-
   chrome.storage.local.set({ room: room });
+
   let name = document.querySelector("#name").value.trim();
-  if (room === "") {
+  if (name === "") {
     name = generate_username();
   }
+
+  leave.style.display = "block";
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab && tab.id) {
@@ -54,6 +61,7 @@ join.addEventListener("click", async () => {
 
 document.querySelector("#leave").addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  leave.style.display = "none";
   if (tab && tab.id) {
     chrome.tabs.sendMessage(tab.id, { type: "LEAVE" });
   }
@@ -149,7 +157,5 @@ setInterval(() => {
 
 document.querySelector("a").addEventListener("click", () => {
   let username = generate_username();
-  chrome.storage.local.set({ username: username });
-  document.querySelector("#name").value = username;
   document.querySelector("#join-btn").click();
 });
