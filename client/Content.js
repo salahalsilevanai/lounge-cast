@@ -356,18 +356,7 @@ toggleButton.innerText = "Chat";
 toggleButton.addEventListener("click", toggle_chat);
 body.appendChild(toggleButton);
 // fixed position of toggle bottom and make it float on top
-toggleButton.style.zIndex = 1000;
-toggleButton.style.position = "fixed";
-toggleButton.style.bottom = "10px";
-toggleButton.style.right = "10px";
-toggleButton.style.width = "60px";
-toggleButton.style.height = "40px";
-toggleButton.style.backgroundColor = "white";
-toggleButton.style.color = "black";
-toggleButton.style.border = "none";
-toggleButton.style.borderRadius = "15px";
-toggleButton.style.cursor = "pointer";
-toggleButton.style.opacity = "0.8";
+toggleButton.classList.add("toggleButton");
 
 function check_room() {
   if (!room) {

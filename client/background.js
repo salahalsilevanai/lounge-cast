@@ -14,7 +14,7 @@ const socket = io("https://osntogetherextention.alsilevanai.com/", {
 // The rest of your event listeners stay exactly the same:
 socket.on("connect", function () {
   console.log("Connected to Socket.IO server!");
-  updateBadge(true);
+  updateLive(true);
 });
 
 socket.on("message", function (data) {
@@ -23,22 +23,17 @@ socket.on("message", function (data) {
 
 socket.on("disconnect", function (reason) {
   console.log("Disconnected:", reason);
-  updateBadge(false);
+  updateLive(false);
 });
 
 socket.on("connect_error", function (error) {
   console.error("Connection Error:", error);
-  updateBadge(false);
+  updateLive(false);
 });
 
-function updateBadge(isConnected) {
-  if (isConnected) {
-    chrome.action.setBadgeBackgroundColor({ color: "#00ff00" });
-    chrome.action.setBadgeText({ text: "ON" });
-  } else {
-    chrome.action.setBadgeBackgroundColor({ color: "#ff0000" });
-    chrome.action.setBadgeText({ text: "OFF" });
-  }
+function updateLive(isLive) {
+  let text = isLive ? "LIVE" : "Offline";
+  chrome.storage.local.set({ isLive: isLive });
 }
 
 chrome.action.onClicked.addListener(function () {

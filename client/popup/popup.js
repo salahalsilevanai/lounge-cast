@@ -115,3 +115,22 @@ function generate_username() {
   }
   return result;
 }
+
+async function getIsLive() {
+  const result = await chrome.storage.local.get({
+    isLive: false,
+  });
+  return result.isLive;
+}
+
+const dot = document.querySelector(".dot");
+
+getIsLive().then((fetchedIsLive) => {
+  if (fetchedIsLive) {
+    document.querySelector("#status").innerHTML = "LIVE";
+    dot.style.animation = "livePulse 1.5s infinite ease-in-out";
+  } else {
+    document.querySelector("#status").innerHTML = "Off";
+    dot.style.animation = "none";
+  }
+});
