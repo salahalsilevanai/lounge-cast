@@ -134,3 +134,22 @@ getIsLive().then((fetchedIsLive) => {
     dot.style.animation = "none";
   }
 });
+
+setInterval(() => {
+  getIsLive().then((fetchedIsLive) => {
+    if (fetchedIsLive) {
+      document.querySelector("#status").innerHTML = "LIVE";
+      dot.style.animation = "livePulse 1.5s infinite ease-in-out";
+    } else {
+      document.querySelector("#status").innerHTML = "Off";
+      dot.style.animation = "none";
+    }
+  });
+}, 1000);
+
+document.querySelector("a").addEventListener("click", () => {
+  let username = generate_username();
+  chrome.storage.local.set({ username: username });
+  document.querySelector("#name").value = username;
+  document.querySelector("#join-btn").click();
+});

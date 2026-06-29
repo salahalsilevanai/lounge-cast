@@ -308,7 +308,6 @@
 
       .footer {
         color: rgba(255, 255, 255, 0.8);
-
         margin: 0px;
         width: 348px;
         height: 20px;
@@ -320,6 +319,13 @@
         padding: 0px;
         gap: 15px;
         margin-bottom: 5px;
+      }
+      a {
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      a:hover{
+        text-decoration: underline;
       }
       .bold {
         font-weight: 700;
@@ -418,7 +424,9 @@
           </button>
         </div>
         <div class="footer">
-          <span>Connect as <span class="bold">Guest</span></span>
+          <span
+            ><a href="">Connect as <span class="bold">Guest</a></span></span
+          >
           <span>●</span>
           <span>Room Sync enabled</span>
         </div>
