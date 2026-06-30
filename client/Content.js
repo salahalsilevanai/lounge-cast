@@ -3,6 +3,9 @@ let videoElement = null;
 let isSyncing = false;
 let username = null;
 let room = null;
+
+join_with_saved();
+
 let URL = window.location.href;
 let TMPURL = URL;
 
@@ -70,7 +73,7 @@ function sendUrlUpstream(URL) {
 
 // ---- move over the body element ----
 const body = document.querySelector("body");
-body.style.width = "calc(100vw - 320px)";
+//body.style.width = "calc(100vw - 320px)";
 
 // ---- create the main container ----
 const div = document.createElement("div");
@@ -288,6 +291,12 @@ chrome.runtime.onMessage.addListener((packet) => {
       display_message("Seeked to " + format_time(packet.time), packet.name);
       break;
 
+    case "VIDEO_URL_CHANGE":
+      window.location.href = packet.url;
+      join_with_saved();
+
+      display_message("Navigated to " + packet.url, packet.name);
+      break;
     case "CHAT_MSG":
       display_message(packet.text, packet.name, "inbound");
       break;
@@ -298,7 +307,32 @@ chrome.runtime.onMessage.addListener((packet) => {
     isSyncing = false;
   }, 100);
 });
+async function refreshUsername() {
+  const result = await chrome.storage.local.get({
+    username: generate_username(),
+  });
+  return result.username;
+}
 
+async function join_with_saved() {
+  refreshUsername().then((fetchedUsername) => {
+    username = fetchedUsername;
+  });
+
+  await chrome.storage.local.get("room").then((data) => {
+    if (data.room === undefined || data.room === null || data.room === "") {
+      return;
+    } else if (data.room) {
+      room = data.room;
+      check_room();
+      chrome.runtime.sendMessage({
+        type: "JOIN",
+        name: username,
+        room: room,
+      });
+    }
+  });
+}
 function send_message(message) {
   chrome.runtime.sendMessage({
     type: "CHAT_MSG",
@@ -312,6 +346,8 @@ chrome.runtime.onMessage.addListener((packet) => {
   if (packet.type === "JOIN") {
     display_message(packet.name + " joined room: " + packet.room, username);
     room = packet.room;
+    // save username and room to localstorage
+    chrome.storage.local.set({ username: packet.name, room: packet.room });
     check_room();
     chrome.runtime.sendMessage({
       type: "JOIN",
@@ -322,14 +358,19 @@ chrome.runtime.onMessage.addListener((packet) => {
 
   if (packet.type === "LEAVE") {
     display_message("You left " + packet.room, username);
-    room = null;
-    check_room();
+
     chrome.runtime.sendMessage({
       type: "LEAVE",
       room: packet.room,
     });
+    removeRoom();
+    check_room();
   }
 });
+
+async function removeRoom() {
+  await chrome.storage.local.remove("room");
+}
 
 chrome.runtime.onMessage.addListener(async (packet) => {
   if (packet.type === "CHANGE-NAME") {
@@ -367,15 +408,24 @@ body.appendChild(toggleButton);
 // fixed position of toggle bottom and make it float on top
 toggleButton.classList.add("toggleButton");
 
-function check_room() {
+async function check_room() {
+  room = await chrome.storage.local.get("room").then((data) => data.room);
   if (!room) {
     toggleButton.classList.add("hidden");
     div.classList.add("hidden");
     body.style.width = 100 + "vw";
+    return;
+  }
+  if ((await chrome.storage.local.get("room")) === null) {
+    toggleButton.classList.add("hidden");
+    div.classList.add("hidden");
+    body.style.width = 100 + "vw";
+    return;
   } else {
     toggleButton.classList.remove("hidden");
     div.classList.remove("hidden");
     body.style.width = "calc(100vw - 320px)";
+    return;
   }
 }
 

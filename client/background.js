@@ -62,3 +62,27 @@ socket.on("watch_party_event", (packet) => {
     chrome.tabs.sendMessage(activePartyTabId, packet);
   }
 });
+
+const heartbeats = new Map();
+
+chrome.runtime.onMessage.addListener((message, sender) => {
+  if (message.type === "HEARTBEAT") {
+    heartbeats.set(sender.tab.id, Date.now());
+  }
+});
+
+// setInterval(async () => {
+//   const now = Date.now();
+
+//   for (const [tabId, lastSeen] of heartbeats) {
+//     if (now - lastSeen > 30000) {
+//       heartbeats.delete(tabId);
+//     }
+//   }
+
+//   // If no tabs are still sending heartbeats,
+//   // clear the saved room.
+//   if (heartbeats.size === 0) {
+//     await chrome.storage.local.remove("room");
+//   }
+// }, 5000);
