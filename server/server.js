@@ -50,8 +50,11 @@ io.on("connection", (socket) => {
         socket.to(room).emit("watch_party_event", packet);
         return;
       case "LEAVE":
-        if (!socket.rooms.has(room)) return;
-        socket.leave(room);
+        for (const room of socket.rooms) {
+          if (room !== socket.id) {
+            socket.leave(room);
+          }
+        }
         console.log(`${socket.id} left room: ${room}`);
 
         socket.to(room).emit("watch_party_event", packet);
@@ -94,11 +97,11 @@ io.on("connection", (socket) => {
 
     // joined_room = Array.from(socket.rooms).filter((r) => r !== socket.id);
     // console.log("user has joined this room: " + joined_room);
-    //socket.to(room).emit("watch_party_event", packet);
+    socket.to(room).emit("watch_party_event", packet);
 
     //console.log("joined room: " + joined_room[0]);
     //socket.broadcast.emit("watch_party_event", packet);
-    socket.emit("watch_party_event", packet);
+    //socket.emit("watch_party_event", packet);
   });
 });
 
