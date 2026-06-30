@@ -33,6 +33,7 @@ io.on("connection", (socket) => {
         isPlaying: false,
         currentTime: 0,
         lastUpdated: Date.now(),
+        url: null,
       };
     }
 
@@ -73,6 +74,12 @@ io.on("connection", (socket) => {
         roomState[room].currentTime = packet.time;
         roomState[room].lastUpdated = Date.now();
         console.log("SEEK");
+        console.log(roomState);
+        break;
+      case "VIDEO_URL_CHANGE":
+        if (!socket.rooms.has(room)) return;
+        roomState[room].url = packet.url;
+        console.log("VIDEO_URL_CHANGE");
         console.log(roomState);
         break;
       case "CHAT_MSG":

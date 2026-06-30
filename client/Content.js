@@ -54,9 +54,19 @@ setInterval(() => {
   if (TMPURL !== URL) {
     TMPURL = URL;
     display_message("User started next episode", username, "outbound");
+    sendUrlUpstream(URL);
     check_video();
   }
 }, 1000);
+
+function sendUrlUpstream(URL) {
+  chrome.runtime.sendMessage({
+    type: "VIDEO_URL_CHANGE",
+    url: URL,
+    name: username,
+    room: room,
+  });
+}
 
 // ---- move over the body element ----
 const body = document.querySelector("body");
@@ -154,14 +164,13 @@ function display_message(message_text, sender, type) {
   }
 
   // 4. Clean up structure: group tracking id on container element
-  messageContainer.id = sender;
-
-  // 5. Build and append
-
+  //if (chat.lastElementChild.firstChild.innerHTML !== sender) {
   messageContainer.appendChild(messageUser);
-  messageContainer.appendChild(textElement);
-  chat.appendChild(messageContainer);
+  //} // Only show username if it's a different sender
 
+  messageContainer.appendChild(textElement);
+
+  chat.appendChild(messageContainer);
   // 6. Smooth scroll to the bottom
   chat.scrollTop = chat.scrollHeight;
 }
