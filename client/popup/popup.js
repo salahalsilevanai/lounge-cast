@@ -1,13 +1,28 @@
 // this function creates a random room id and sends it to the content script
 const room_field = document.querySelector("#room");
 const name_field = document.querySelector("#name");
-
 const leave = document.querySelector(".leave");
-if (!room) {
-  leave.style.display = "none";
-}
+const join = document.querySelector("#join-btn");
+const create = document.querySelector("#create");
 
-document.querySelector("#create").addEventListener("click", async () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await refreshUsername().then((fetchedUsername) => {
+    document.querySelector("#name").value = fetchedUsername;
+  });
+
+  await refreshRoom().then((fetchedRoom) => {
+    document.querySelector("#room").value = fetchedRoom;
+  });
+});
+
+(async () => {
+  let room = await refreshRoom();
+  if (!room || room == null) {
+    leave.style.display = "none";
+  }
+})();
+
+create.addEventListener("click", async () => {
   let room = room_field.value.trim();
 
   if (room === "") {
@@ -34,7 +49,6 @@ document.querySelector("#create").addEventListener("click", async () => {
 });
 
 // this function sends a join request to the content script with the room id and name
-const join = document.querySelector("#join-btn");
 join.addEventListener("click", async () => {
   const room = document.querySelector("#room").value.trim();
   if (room === "") {
@@ -59,7 +73,8 @@ join.addEventListener("click", async () => {
   }
 });
 
-document.querySelector("#leave").addEventListener("click", async () => {
+leave.addEventListener("click", async () => {
+  await chrome.storage.local.remove("room");
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   leave.style.display = "none";
   if (tab && tab.id) {
@@ -89,20 +104,10 @@ async function refreshUsername() {
 }
 async function refreshRoom() {
   const result = await chrome.storage.local.get({
-    room: "",
+    room: null,
   });
   return result.room;
 }
-
-document.addEventListener("DOMContentLoaded", async () => {
-  await refreshUsername().then((fetchedUsername) => {
-    document.querySelector("#name").value = fetchedUsername;
-  });
-
-  await refreshRoom().then((fetchedRoom) => {
-    document.querySelector("#room").value = fetchedRoom;
-  });
-});
 
 // this function generates a random room id
 function generate_room_id(len = 8) {

@@ -79,6 +79,7 @@ const body = document.querySelector("body");
 const div = document.createElement("div");
 div.classList.add("main-container");
 body.appendChild(div);
+div.classList.add("hidden");
 
 // ---- create the chat container ----
 const chat = document.createElement("div");
@@ -411,6 +412,7 @@ const toggleButton = document.createElement("button");
 toggleButton.innerText = "Chat";
 toggleButton.addEventListener("click", toggle_chat);
 body.appendChild(toggleButton);
+toggleButton.classList.add("hidden");
 // fixed position of toggle bottom and make it float on top
 toggleButton.classList.add("toggleButton");
 
