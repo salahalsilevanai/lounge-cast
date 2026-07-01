@@ -74,12 +74,15 @@ join.addEventListener("click", async () => {
 });
 
 leave.addEventListener("click", async () => {
-  await chrome.storage.local.remove("room");
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   leave.style.display = "none";
   if (tab && tab.id) {
-    chrome.tabs.sendMessage(tab.id, { type: "LEAVE" });
+    chrome.tabs.sendMessage(tab.id, {
+      type: "LEAVE",
+      room: room_field.value.trim(),
+    });
   }
+  await chrome.storage.local.remove("room");
 });
 
 document.querySelector("#username-btn").addEventListener("click", async () => {
