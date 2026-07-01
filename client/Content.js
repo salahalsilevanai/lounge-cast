@@ -350,7 +350,11 @@ function send_message(message) {
 
 chrome.runtime.onMessage.addListener((packet) => {
   if (packet.type === "JOIN") {
-    display_message(packet.name + " joined room: " + packet.room, username);
+    display_message(
+      packet.name + " joined room: " + packet.room,
+      username,
+      "outbound",
+    );
     room = packet.room;
     // save username and room to localstorage
     chrome.storage.local.set({ username: packet.name, room: packet.room });
@@ -363,7 +367,7 @@ chrome.runtime.onMessage.addListener((packet) => {
   }
 
   if (packet.type === "LEAVE") {
-    display_message("You left " + packet.room, username);
+    display_message("You left " + packet.room, username, "outbound");
 
     chrome.runtime.sendMessage({
       type: "LEAVE",
@@ -398,13 +402,26 @@ chrome.runtime.onMessage.addListener(async (packet) => {
   }
 });
 
+// div.style.transition = "transform 300ms ease, opacity 300ms ease";
+// body.style.transition = "width 300ms ease";
+
+function showChat() {
+  div.classList.remove("hidden");
+  div.classList.add("visible");
+  body.style.width = "calc(100vw - 320px)";
+}
+
+function hideChat() {
+  div.classList.remove("visible");
+  div.classList.add("hidden");
+  body.style.width = "100vw";
+}
+
 function toggle_chat() {
   if (div.classList.contains("hidden")) {
-    div.classList.remove("hidden");
-    body.style.width = "calc(100vw - 320px)";
+    showChat();
   } else {
-    div.classList.add("hidden");
-    body.style.width = 100 + "vw";
+    hideChat();
   }
 }
 
@@ -412,29 +429,21 @@ const toggleButton = document.createElement("button");
 toggleButton.innerText = "Chat";
 toggleButton.addEventListener("click", toggle_chat);
 body.appendChild(toggleButton);
-toggleButton.classList.add("hidden");
-// fixed position of toggle bottom and make it float on top
+hideChat();
+toggleButton.style.display = "none";
 toggleButton.classList.add("toggleButton");
 
 async function check_room() {
-  room = await chrome.storage.local.get("room").then((data) => data.room);
+  const { room } = await chrome.storage.local.get("room");
+
   if (!room) {
-    toggleButton.classList.add("hidden");
-    div.classList.add("hidden");
-    body.style.width = 100 + "vw";
+    toggleButton.style.display = "none";
+    hideChat();
     return;
   }
-  if ((await chrome.storage.local.get("room")) === null) {
-    toggleButton.classList.add("hidden");
-    div.classList.add("hidden");
-    body.style.width = 100 + "vw";
-    return;
-  } else {
-    toggleButton.classList.remove("hidden");
-    div.classList.remove("hidden");
-    body.style.width = "calc(100vw - 320px)";
-    return;
-  }
+
+  toggleButton.style.display = "block";
+  showChat();
 }
 
 check_room();
