@@ -15,12 +15,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
-(async () => {
+async function refreshButtons() {
   let room = await refreshRoom();
   if (!room || room == null) {
     leave.style.display = "none";
+    create.style.display = "block";
+    join.style.display = "block";
+  } else {
+    leave.style.display = "block";
+    create.style.display = "none";
+    join.style.display = "none";
   }
-})();
+}
+refreshButtons();
 
 create.addEventListener("click", async () => {
   let room = room_field.value.trim();
@@ -46,6 +53,7 @@ create.addEventListener("click", async () => {
       name: name,
     });
   }
+  await refreshButtons();
 });
 
 // this function sends a join request to the content script with the room id and name
@@ -61,8 +69,6 @@ join.addEventListener("click", async () => {
     name = generate_username();
   }
 
-  leave.style.display = "block";
-
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab && tab.id) {
     chrome.tabs.sendMessage(tab.id, {
@@ -71,6 +77,7 @@ join.addEventListener("click", async () => {
       room: room.trim(),
     });
   }
+  await refreshButtons();
 });
 
 leave.addEventListener("click", async () => {
@@ -83,6 +90,7 @@ leave.addEventListener("click", async () => {
     });
   }
   await chrome.storage.local.remove("room");
+  await refreshButtons();
 });
 
 document.querySelector("#username-btn").addEventListener("click", async () => {
