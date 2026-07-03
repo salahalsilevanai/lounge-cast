@@ -4,7 +4,7 @@ const name_field = document.querySelector("#name");
 const leave = document.querySelector(".leave");
 const join = document.querySelector("#join-btn");
 const create = document.querySelector("#create");
-
+const change_name = document.querySelector("#username-btn");
 document.addEventListener("DOMContentLoaded", async () => {
   await refreshUsername().then((fetchedUsername) => {
     document.querySelector("#name").value = fetchedUsername;
@@ -15,19 +15,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
-async function refreshButtons() {
-  let room = await refreshRoom();
-  if (!room || room == null) {
-    leave.style.display = "none";
-    create.style.display = "block";
-    join.style.display = "block";
-  } else {
-    leave.style.display = "block";
-    create.style.display = "none";
-    join.style.display = "none";
-  }
-}
-refreshButtons();
+// async function refreshButtons() {
+//   let room = await refreshRoom();
+//   if (!room || room == null) {
+//     leave.style.display = "none";
+//     create.style.display = "block";
+//     join.style.display = "block";
+//   } else {
+//     leave.style.display = "block";
+//     create.style.display = "none";
+//     join.style.display = "none";
+//   }
+// }
+// refreshButtons();
 
 create.addEventListener("click", async () => {
   let room = room_field.value.trim();
@@ -38,7 +38,7 @@ create.addEventListener("click", async () => {
   room_field.value = room;
 
   chrome.storage.local.set({ room: room });
-  leave.style.display = "block";
+  //leave.style.display = "block";
   // send the room id to the content script
   let name = name_field.value.trim();
   if (name === "") {
@@ -53,7 +53,7 @@ create.addEventListener("click", async () => {
       name: name,
     });
   }
-  await refreshButtons();
+  //await refreshButtons();
 });
 
 // this function sends a join request to the content script with the room id and name
@@ -77,12 +77,12 @@ join.addEventListener("click", async () => {
       room: room.trim(),
     });
   }
-  await refreshButtons();
+  //await refreshButtons();
 });
 
 leave.addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  leave.style.display = "none";
+  //leave.style.display = "none";
   if (tab && tab.id) {
     chrome.tabs.sendMessage(tab.id, {
       type: "LEAVE",
@@ -90,10 +90,10 @@ leave.addEventListener("click", async () => {
     });
   }
   await chrome.storage.local.remove("room");
-  await refreshButtons();
+  //await refreshButtons();
 });
 
-document.querySelector("#username-btn").addEventListener("click", async () => {
+change_name.addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({
     active: true,
     currentWindow: true,
@@ -171,7 +171,10 @@ setInterval(() => {
   });
 }, 1000);
 
-document.querySelector("a").addEventListener("click", () => {
+document.querySelector("a").addEventListener("click", async () => {
   let username = generate_username();
+  // save username to local storage
+  document.querySelector("#name").value = username;
+  await change_name.click();
   document.querySelector("#join-btn").click();
 });

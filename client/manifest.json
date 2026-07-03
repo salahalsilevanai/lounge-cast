@@ -14,7 +14,11 @@
       "css": ["Content.css"]
     }
   ],
-  "host_permissions": ["http://localhost:3000/", "http://127.0.0.1:3000/"],
+  "host_permissions": [
+    "http://localhost:3000/",
+    "http://127.0.0.1:3000/",
+    "https://osntogetherextention.alsilevanai.com/"
+  ],
   "permissions": ["activeTab", "tabs", "storage"],
   "action": {
     "default_popup": "popup/popup.html",

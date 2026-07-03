@@ -45,16 +45,21 @@ io.on("connection", (socket) => {
 
         socket.emit("watch_party_event", {
           type: "ROOM_INITIAL_SYNC",
+          room,
           state: getCurrentState(room),
         });
         socket.to(room).emit("watch_party_event", packet);
         return;
       case "LEAVE":
-        for (const room of socket.rooms) {
-          if (room !== socket.id) {
-            socket.leave(room);
-          }
-        }
+        // Leave all rooms socket is currently in except
+        // for (const room of socket.rooms) {
+        //   if (room !== socket.id) {
+        //     socket.leave(room);
+        //   }
+        // }
+
+        if (!socket.rooms.has(room)) return;
+        socket.leave(room);
         console.log(`${socket.id} left room: ${room}`);
 
         socket.to(room).emit("watch_party_event", packet);
@@ -87,7 +92,7 @@ io.on("connection", (socket) => {
         break;
       case "CHAT_MSG":
         console.log(socket.room);
-        console.log(socket.id + " chat msg: " + packet.message);
+        console.log(socket.id + " chat msg: " + packet.text);
         console.log("CHAT_MSG");
         console.log(packet);
         //socket.to(room).emit("watch_party_event", packet);

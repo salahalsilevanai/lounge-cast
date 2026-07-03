@@ -292,7 +292,7 @@ chrome.runtime.onMessage.addListener((packet) => {
 
     case "VIDEO_SEEK":
       if (!room) return;
-      targetVideo.currentTime = packet.time;
+      videoElement.currentTime = packet.time;
       display_message("Seeked to " + format_time(packet.time), packet.name);
       break;
 
@@ -321,7 +321,7 @@ async function refreshUsername() {
 }
 
 async function join_with_saved() {
-  refreshUsername().then((fetchedUsername) => {
+  await refreshUsername().then((fetchedUsername) => {
     username = fetchedUsername;
   });
 
@@ -385,18 +385,14 @@ async function removeRoom() {
 
 chrome.runtime.onMessage.addListener(async (packet) => {
   if (packet.type === "CHANGE-NAME") {
-    tmpusr = username;
-    chrome.storage.local.set({ username: packet.name }).then(() => {
-      display_message(
-        "You changed your name to local: " + packet.name,
-        username,
-        "outbound",
-      );
-    });
-
-    username = await chrome.storage.local
-      .get({ username: "guest" })
-      .then((result) => result.username);
+    const tmpusr = username;
+    await chrome.storage.local.set({ username: packet.name });
+    username = packet.name;
+    display_message(
+      "You changed your name to: " + packet.name,
+      username,
+      "outbound",
+    );
 
     send_message(tmpusr + " changed their name to: " + username);
   }

@@ -46,21 +46,38 @@ chrome.action.onClicked.addListener(function () {
   }
 });
 
-let activePartyTabId = null;
+const tabRooms = new Map();
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (sender.tab?.id) {
-    activePartyTabId = sender.tab.id;
+chrome.runtime.onMessage.addListener((message, sender) => {
+  const tabId = sender.tab?.id;
+
+  if (tabId) {
+    if (message.type === "JOIN" && message.room) {
+      tabRooms.set(tabId, message.room);
+    } else if (message.type === "LEAVE") {
+      tabRooms.delete(tabId);
+    }
   }
+
   if (socket.connected) {
     socket.emit("watch_party_event", message);
   }
 });
 
 socket.on("watch_party_event", (packet) => {
-  if (activePartyTabId) {
-    chrome.tabs.sendMessage(activePartyTabId, packet);
+  if (!packet.room) return;
+
+  for (const [tabId, room] of tabRooms) {
+    if (room === packet.room) {
+      chrome.tabs.sendMessage(tabId, packet).catch(() => {
+        tabRooms.delete(tabId);
+      });
+    }
   }
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  tabRooms.delete(tabId);
 });
 
 const heartbeats = new Map();
