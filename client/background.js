@@ -46,6 +46,7 @@ chrome.action.onClicked.addListener(function () {
   }
 });
 
+// debugged the following section using claude.ai
 const tabRooms = new Map();
 
 chrome.runtime.onMessage.addListener((message, sender) => {
@@ -75,6 +76,12 @@ socket.on("watch_party_event", (packet) => {
     }
   }
 });
+
+socket.on("disconnect", () => {
+  tabRooms.clear();
+});
+
+// end of debugged section
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   tabRooms.delete(tabId);

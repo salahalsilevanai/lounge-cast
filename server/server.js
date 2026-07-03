@@ -98,13 +98,14 @@ io.on("connection", (socket) => {
         //socket.to(room).emit("watch_party_event", packet);
         break;
     }
-    //Broadcast the updated state to everyone else
-
+    // testing purposes only, to see if the state is being updated correctly
+    // Broadcast the updated state to everyone else
     // joined_room = Array.from(socket.rooms).filter((r) => r !== socket.id);
     // console.log("user has joined this room: " + joined_room);
 
     socket.to(room).emit("watch_party_event", packet);
 
+    // testing purposes
     //console.log("joined room: " + joined_room[0]);
     //socket.broadcast.emit("watch_party_event", packet);
     //socket.emit("watch_party_event", packet);
