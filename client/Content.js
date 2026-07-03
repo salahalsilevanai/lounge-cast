@@ -18,15 +18,6 @@ function generate_username() {
   return result;
 }
 
-async function getUsername() {
-  username = await chrome.storage.local
-    .get({ username: generate_username() })
-    .then((result) => {
-      return result.username;
-    });
-}
-getUsername();
-
 // ---- find the video element ----
 function check_video() {
   //const ytPlayer = document.getElementById("movie_player");
@@ -303,6 +294,12 @@ chrome.runtime.onMessage.addListener((packet) => {
 
       display_message("Navigated to " + packet.url, packet.name);
       break;
+    case "PEER_JOINED":
+      display_message(packet.name + " joined the room", username, "inbound");
+      break;
+    case "PEER_LEFT":
+      display_message(packet.name + " left the room", username, "inbound");
+      break;
     case "CHAT_MSG":
       display_message(packet.text, packet.name, "inbound");
       break;
@@ -313,32 +310,22 @@ chrome.runtime.onMessage.addListener((packet) => {
     isSyncing = false;
   }, 100);
 });
-async function refreshUsername() {
-  const result = await chrome.storage.local.get({
-    username: generate_username(),
-  });
-  return result.username;
-}
 
 async function join_with_saved() {
-  await refreshUsername().then((fetchedUsername) => {
-    username = fetchedUsername;
-  });
+  username = await resolveUsername();
 
-  await chrome.storage.local.get("room").then((data) => {
-    if (data.room === undefined || data.room === null || data.room === "") {
-      return;
-    } else if (data.room) {
-      room = data.room;
-      check_room();
-      chrome.runtime.sendMessage({
-        type: "JOIN",
-        name: username,
-        room: room,
-      });
-    }
-  });
+  const savedRoom = sessionStorage.getItem("room");
+  if (savedRoom) {
+    room = savedRoom;
+    check_room();
+    chrome.runtime.sendMessage({
+      type: "JOIN",
+      name: username,
+      room: room,
+    });
+  }
 }
+
 function send_message(message) {
   chrome.runtime.sendMessage({
     type: "CHAT_MSG",
@@ -355,9 +342,12 @@ chrome.runtime.onMessage.addListener((packet) => {
       username,
       "outbound",
     );
+
     room = packet.room;
-    // save username and room to localstorage
-    chrome.storage.local.set({ username: packet.name, room: packet.room });
+    username = packet.name;
+    // save username and room to sessionStorage
+    sessionStorage.setItem("room", packet.room);
+    sessionStorage.setItem("username", packet.name);
     check_room();
     chrome.runtime.sendMessage({
       type: "JOIN",
@@ -372,6 +362,7 @@ chrome.runtime.onMessage.addListener((packet) => {
     chrome.runtime.sendMessage({
       type: "LEAVE",
       room: packet.room,
+      name: username,
     });
     removeRoom();
     check_room();
@@ -380,20 +371,19 @@ chrome.runtime.onMessage.addListener((packet) => {
 
 async function removeRoom() {
   room = null;
-  await chrome.storage.local.remove("room");
+  await sessionStorage.removeItem("room");
 }
 
 chrome.runtime.onMessage.addListener(async (packet) => {
   if (packet.type === "CHANGE-NAME") {
     const tmpusr = username;
-    await chrome.storage.local.set({ username: packet.name });
+    sessionStorage.setItem("username", packet.name);
     username = packet.name;
     display_message(
       "You changed your name to: " + packet.name,
       username,
       "outbound",
     );
-
     send_message(tmpusr + " changed their name to: " + username);
   }
 });
@@ -430,9 +420,9 @@ toggleButton.style.display = "none";
 toggleButton.classList.add("toggleButton");
 
 async function check_room() {
-  const { room } = await chrome.storage.local.get("room");
+  const savedRoom = sessionStorage.getItem("room");
 
-  if (!room) {
+  if (!savedRoom) {
     toggleButton.style.display = "none";
     hideChat();
     return;
@@ -462,4 +452,21 @@ function format_time(time) {
       String(Math.round(time % 60)).padStart(2, "0");
   }
   return result;
+}
+
+chrome.runtime.onMessage.addListener((packet, sender, sendResponse) => {
+  if (packet.type === "GET_STATE") {
+    sendResponse({ room: room, username: username });
+    return true; // keep the message channel open for async response
+  }
+});
+
+async function resolveUsername() {
+  const sessionUsername = sessionStorage.getItem("username");
+  if (sessionUsername) return sessionUsername;
+
+  const localResult = await chrome.storage.local.get({ username: null });
+  if (localResult.username) return localResult.username;
+
+  return generate_username();
 }

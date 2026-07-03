@@ -5,15 +5,6 @@ const leave = document.querySelector(".leave");
 const join = document.querySelector("#join-btn");
 const create = document.querySelector("#create");
 const change_name = document.querySelector("#username-btn");
-document.addEventListener("DOMContentLoaded", async () => {
-  await refreshUsername().then((fetchedUsername) => {
-    document.querySelector("#name").value = fetchedUsername;
-  });
-
-  await refreshRoom().then((fetchedRoom) => {
-    document.querySelector("#room").value = fetchedRoom;
-  });
-});
 
 // async function refreshButtons() {
 //   let room = await refreshRoom();
@@ -37,7 +28,6 @@ create.addEventListener("click", async () => {
   }
   room_field.value = room;
 
-  chrome.storage.local.set({ room: room });
   //leave.style.display = "block";
   // send the room id to the content script
   let name = name_field.value.trim();
@@ -62,7 +52,7 @@ join.addEventListener("click", async () => {
   if (room === "") {
     return;
   }
-  chrome.storage.local.set({ room: room });
+  //chrome.storage.local.set({ room: room });
 
   let name = document.querySelector("#name").value.trim();
   if (name === "") {
@@ -89,7 +79,7 @@ leave.addEventListener("click", async () => {
       room: room_field.value.trim(),
     });
   }
-  await chrome.storage.local.remove("room");
+  //await chrome.storage.local.remove("room");
   //await refreshButtons();
 });
 
@@ -107,18 +97,6 @@ change_name.addEventListener("click", async () => {
 });
 
 let username;
-async function refreshUsername() {
-  const result = await chrome.storage.local.get({
-    username: generate_username(),
-  });
-  return result.username;
-}
-async function refreshRoom() {
-  const result = await chrome.storage.local.get({
-    room: null,
-  });
-  return result.room;
-}
 
 // this function generates a random room id
 function generate_room_id(len = 8) {
@@ -177,4 +155,15 @@ document.querySelector("a").addEventListener("click", async () => {
   document.querySelector("#name").value = username;
   await change_name.click();
   document.querySelector("#join-btn").click();
+});
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  chrome.tabs.sendMessage(tab.id, { type: "GET_STATE" }, (response) => {
+    if (chrome.runtime.lastError || !response) return; // no content script on this tab
+    document.querySelector("#name").value =
+      response.username || generate_username();
+    document.querySelector("#room").value = response.room || "";
+  });
 });

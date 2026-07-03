@@ -48,7 +48,11 @@ io.on("connection", (socket) => {
           room,
           state: getCurrentState(room),
         });
-        socket.to(room).emit("watch_party_event", packet);
+        socket.to(room).emit("watch_party_event", {
+          type: "PEER_JOINED",
+          name: packet.name,
+          room,
+        });
         return;
       case "LEAVE":
         // Leave all rooms socket is currently in except
@@ -62,7 +66,11 @@ io.on("connection", (socket) => {
         socket.leave(room);
         console.log(`${socket.id} left room: ${room}`);
 
-        socket.to(room).emit("watch_party_event", packet);
+        socket.to(room).emit("watch_party_event", {
+          type: "PEER_LEFT",
+          name: packet.name,
+          room,
+        });
         return;
       case "VIDEO_PLAY":
         roomState[room].isPlaying = true;
