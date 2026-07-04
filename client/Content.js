@@ -3,7 +3,7 @@ let videoElement = null;
 let isSyncing = false;
 let username = null;
 let room = null;
-
+let pendingSync = null;
 join_with_saved();
 
 let URL = window.location.href;
@@ -36,6 +36,11 @@ function check_video() {
     videoElement = currentVideo;
 
     setupVideoSyncListeners(currentVideo, currentVideoId);
+
+    if (pendingSync) {
+      applyRoomSync(pendingSync);
+      pendingSync = null;
+    }
   }
 }
 
@@ -244,25 +249,25 @@ function setupVideoSyncListeners(targetVideo, assignedId) {
 // -------------------------------------- check it later
 // --- 2. INBOUND SYNC ACTIONS (Received from server) ---
 chrome.runtime.onMessage.addListener((packet) => {
-  if (!videoElement) return;
+  if (packet.type === "ROOM_INITIAL_SYNC") {
+    if (packet.url && packet.url !== window.location.href) {
+      window.location.href = packet.url;
+      return;
+    }
+    if (!videoElement) {
+      pendingSync = packet.state;
+      return;
+    }
 
+    applyRoomSync(packet.state);
+    return;
+  }
+
+  if (!videoElement) return;
   // Turn on block lock so our local listeners don't echo back to the socket server
   isSyncing = true;
 
   switch (packet.type) {
-    case "ROOM_INITIAL_SYNC":
-      videoElement.currentTime = packet.state.currentTime;
-      if (packet.state.isPlaying) {
-        videoElement
-          .play()
-          .catch(() =>
-            console.log("Interact with the page to allow audio auto-play"),
-          );
-      } else {
-        videoElement.pause();
-      }
-      break;
-
     case "VIDEO_PLAY":
       // If client is more than 1.5s out of sync, snap them to the exact peer time
       //if (Math.abs(videoElement.currentTime - packet.time) > 1.5) {
@@ -311,6 +316,22 @@ chrome.runtime.onMessage.addListener((packet) => {
   }, 100);
 });
 
+function applyRoomSync(state) {
+  isSyncing = true;
+  videoElement.currentTime = state.currentTime;
+  if (state.isPlaying) {
+    videoElement.play().catch(() => {
+      console.log(
+        "Failed to play video during room sync. It may be blocked by the browser.",
+      );
+    });
+  } else {
+    videoElement.pause();
+  }
+  setTimeout(() => {
+    isSyncing = false;
+  }, 100);
+}
 async function join_with_saved() {
   username = await resolveUsername();
 
@@ -322,6 +343,7 @@ async function join_with_saved() {
       type: "JOIN",
       name: username,
       room: room,
+      url: window.location.href,
     });
   }
 }

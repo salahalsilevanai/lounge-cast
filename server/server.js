@@ -39,23 +39,27 @@ io.on("connection", (socket) => {
 
     switch (packet.type) {
       case "JOIN":
-        if (socket.rooms.has(room)) return;
-        socket.join(room);
-        console.log(packet.name + " joined room: " + room);
+        const alreadyInRoom = socket.rooms.has(room);
+        if (!alreadyInRoom) {
+          socket.join(room);
+          console.log(packet.name + " joined room: " + room);
 
-        if (packet.url && roomState[room].url == null) {
-          roomState[room].url = packet.url;
+          if (packet.url && roomState[room].url == null) {
+            roomState[room].url = packet.url;
+          }
+
+          socket.to(room).emit("watch_party_event", {
+            type: "PEER_JOINED",
+            name: packet.name,
+            room,
+          });
         }
 
         socket.emit("watch_party_event", {
           type: "ROOM_INITIAL_SYNC",
           room,
           state: getCurrentState(room),
-        });
-        socket.to(room).emit("watch_party_event", {
-          type: "PEER_JOINED",
-          name: packet.name,
-          room,
+          url: roomState[room].url,
         });
         return;
       case "LEAVE":
