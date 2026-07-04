@@ -43,6 +43,10 @@ io.on("connection", (socket) => {
         socket.join(room);
         console.log(packet.name + " joined room: " + room);
 
+        if (packet.url && roomState[room].url == null) {
+          roomState[room].url = packet.url;
+        }
+
         socket.emit("watch_party_event", {
           type: "ROOM_INITIAL_SYNC",
           room,

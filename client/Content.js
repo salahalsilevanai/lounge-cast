@@ -353,6 +353,7 @@ chrome.runtime.onMessage.addListener((packet) => {
       type: "JOIN",
       name: packet.name,
       room: packet.room,
+      url: window.location.href,
     });
   }
 
