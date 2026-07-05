@@ -319,13 +319,13 @@ chrome.runtime.onMessage.addListener((packet) => {
 function applyRoomSync(state) {
   isSyncing = true;
   videoElement.currentTime = state.currentTime;
-  if (state.isPlaying) {
+  if (state.isPlaying && videoElement.paused) {
     videoElement.play().catch(() => {
       console.log(
         "Failed to play video during room sync. It may be blocked by the browser.",
       );
     });
-  } else {
+  } else if (!state.isPlaying && !videoElement.paused) {
     videoElement.pause();
   }
   setTimeout(() => {
