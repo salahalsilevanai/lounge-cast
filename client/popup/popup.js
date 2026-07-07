@@ -65,7 +65,7 @@ join.addEventListener("click", async () => {
       type: "JOIN",
       name: name.trim(),
       room: room.trim(),
-      url: window.location.href,
+      url: tab.url, // debugged and improved using claude.ai
     });
   }
   //await refreshButtons();

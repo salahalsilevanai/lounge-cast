@@ -20,8 +20,36 @@ function getCurrentState(room) {
   };
 }
 
+// debugged and written using claude.ai
+// Remove a room's state once no sockets remain in it.
+function cleanupRoomIfEmpty(room) {
+  const roomSockets = io.sockets.adapter.rooms.get(room);
+  const remaining = roomSockets ? roomSockets.size : 0;
+  if (remaining === 0 && roomState[room]) {
+    delete roomState[room];
+    console.log(`Room ${room} is empty, state cleared`);
+  }
+}
+
+// debugged and improved using claude.ai
 io.on("connection", (socket) => {
   console.log(`Peer joined: ${socket.id}`);
+  socket.data.joinedRooms = new Set();
+
+  // Fires on tab close, crash, network loss, or explicit disconnect —
+  // unlike the "LEAVE" packet, this covers every way a peer can vanish.
+  socket.on("disconnect", (reason) => {
+    console.log(`Peer disconnected: ${socket.id} (${reason})`);
+
+    for (const room of socket.data.joinedRooms) {
+      socket.to(room).emit("watch_party_event", {
+        type: "PEER_LEFT",
+        name: socket.data.name,
+        room,
+      });
+      cleanupRoomIfEmpty(room);
+    }
+  });
 
   socket.on("watch_party_event", (packet) => {
     const room = packet.room;
@@ -42,6 +70,8 @@ io.on("connection", (socket) => {
         const alreadyInRoom = socket.rooms.has(room);
         if (!alreadyInRoom) {
           socket.join(room);
+          socket.data.joinedRooms.add(room);
+          socket.data.name = packet.name;
           console.log(packet.name + " joined room: " + room);
 
           if (packet.url && roomState[room].url == null) {
@@ -72,6 +102,7 @@ io.on("connection", (socket) => {
 
         if (!socket.rooms.has(room)) return;
         socket.leave(room);
+        socket.data.joinedRooms.delete(room);
         console.log(`${socket.id} left room: ${room}`);
 
         socket.to(room).emit("watch_party_event", {
@@ -79,6 +110,7 @@ io.on("connection", (socket) => {
           name: packet.name,
           room,
         });
+        cleanupRoomIfEmpty(room); // debugged and written using claude.ai
         return;
       case "VIDEO_PLAY":
         roomState[room].isPlaying = true;
@@ -107,7 +139,7 @@ io.on("connection", (socket) => {
         console.log(roomState);
         break;
       case "CHAT_MSG":
-        console.log(socket.room);
+        console.log(roomState[room]);
         console.log(socket.id + " chat msg: " + packet.text);
         console.log("CHAT_MSG");
         console.log(packet);

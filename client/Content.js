@@ -1,6 +1,9 @@
 let currentVideoId = null;
 let videoElement = null;
 let isSyncing = false;
+let isRemoteNav = false; // true for the brief window between us setting
+// window.location.href from a peer's URL packet
+// and the page actually tearing down
 let username = null;
 let room = null;
 let pendingSync = null;
@@ -52,6 +55,11 @@ setInterval(() => {
   URL = window.location.href;
   if (TMPURL !== URL) {
     TMPURL = URL;
+    // // debugged and written using claude.ai
+    // If this navigation was triggered by an incoming VIDEO_URL_CHANGE
+    // packet, don't echo it straight back out — isRemoteNav is cleared
+    // right after we finish handling that packet below.
+    if (isRemoteNav) return;
     display_message("User started next episode", username, "outbound");
     sendUrlUpstream(URL);
     check_video();
@@ -251,6 +259,7 @@ function setupVideoSyncListeners(targetVideo, assignedId) {
 chrome.runtime.onMessage.addListener((packet) => {
   if (packet.type === "ROOM_INITIAL_SYNC") {
     if (packet.url && packet.url !== window.location.href) {
+      isRemoteNav = true;
       window.location.href = packet.url;
       return;
     }
@@ -294,6 +303,7 @@ chrome.runtime.onMessage.addListener((packet) => {
 
     case "VIDEO_URL_CHANGE":
       if (!room) return;
+      isRemoteNav = true;
       window.location.href = packet.url;
       join_with_saved();
 
