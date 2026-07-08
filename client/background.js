@@ -12,9 +12,10 @@ const socket = io("https://osntogetherextention.alsilevanai.com/", {
 });
 
 // The rest of your event listeners stay exactly the same:
-socket.on("connect", function () {
+socket.on("connect", async function () {
   console.log("Connected to Socket.IO server!");
   updateLive(true);
+  await rebuildTabRooms();
 });
 
 socket.on("message", function (data) {
@@ -48,6 +49,48 @@ chrome.action.onClicked.addListener(function () {
 
 // debugged the following section using claude.ai
 const tabRooms = new Map();
+
+// After the background service worker gets killed and restarts (or after
+// any reconnect), tabRooms is empty and the server has forgotten our old
+// socket.id entirely -- but the content scripts don't know any of that
+// happened, since they live in the tab and were never torn down. This
+// asks every open tab what room (if any) it thinks it's still in, then
+// re-sends JOIN for each one so both sides agree again.
+async function rebuildTabRooms() {
+  tabRooms.clear();
+  const tabs = await chrome.tabs.query({});
+
+  await Promise.all(
+    tabs.map(
+      (tab) =>
+        new Promise((resolve) => {
+          if (!tab.id) return resolve();
+
+          chrome.tabs.sendMessage(tab.id, { type: "GET_STATE" }, (response) => {
+            // chrome.runtime.lastError fires when there's no content
+            // script on this tab (e.g. a chrome:// page) -- nothing to
+            // recover there, so just move on.
+            if (chrome.runtime.lastError || !response || !response.room) {
+              return resolve();
+            }
+
+            tabRooms.set(tab.id, response.room);
+            socket.emit("watch_party_event", {
+              type: "JOIN",
+              name: response.username,
+              room: response.room,
+              url: tab.url,
+            });
+            resolve();
+          });
+        }),
+    ),
+  );
+
+  console.log(
+    `Rebuilt tabRooms after (re)connect: ${tabRooms.size} tab(s) rejoined`,
+  );
+}
 
 chrome.runtime.onMessage.addListener((message, sender) => {
   const tabId = sender.tab?.id;
