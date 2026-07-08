@@ -1,5 +1,9 @@
 # Lounge Cast
 
+#### Video Demo: https://www.youtube.com/watch?v=sk0YoY14DMM
+
+#### Description:
+
 **Watch & Listen Together** — a Chrome extension that lets you and your friends watch OSN+ or YouTube videos in perfect sync, with a built-in chat, from anywhere.
 
 Lounge Cast pairs a lightweight Chrome extension (Manifest V3) with a small Socket.IO relay server to keep playback state — play, pause, seek, and even URL/episode changes — synchronized across everyone in a room, alongside a real-time text chat overlay.
@@ -140,6 +144,18 @@ const socket = io("https://your-server-domain.com/", {
 - Only tested against `osnplus.com` and `youtube.com`; other video sites aren't matched by the content script yet
 - No authentication — anyone with a Room ID can join
 - Chat history is not persisted between sessions
+
+---
+
+## Acknowledgments
+
+Lounge Cast was designed and built by me from the ground up. Towards the end of the project, I used Claude (Anthropic) as a debugging and code-review assistant to help track down and fix a handful of specific issues we worked through together:
+
+- A Manifest V3 service worker lifecycle bug, where Chrome terminating the idle background script wiped its in-memory room-tracking state and silently desynced peers until a tab was reloaded — fixed with a `rebuildTabRooms()` recovery routine that runs on every socket reconnect.
+- A race condition where a peer-triggered URL/episode change could echo back out to the server as if it were a local navigation.
+- Missing server-side handling for peers who disconnected without explicitly leaving a room, which left stale peers in the roster and leaked room state over time.
+
+All core architecture, features, and implementation are my own; Claude's role was reviewing existing code, identifying the root cause of specific bugs, and helping implement the corresponding fixes.
 
 ---
 
